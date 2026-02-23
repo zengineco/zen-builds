@@ -2,30 +2,42 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <title>ZEN BUILDS — Precision Under Pressure</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;500;700&family=Bebas+Neue&display=swap');
   :root {
-    --bg: #0a0a08; --accent: #f5c400; --accent2: #ff4d1c; --accent3: #00e5a0;
+    --bg: #0f0d0a; --accent: #f5c400; --accent2: #ff4d1c; --accent3: #00e5a0;
     --smalls-accent: #c084fc; --smalls-glow: rgba(192,132,252,0.35);
-    --text: #e8e0c8; --dim: #6a6458; --panel: #161612;
+    --text: #e8e0c8; --dim: #6a6458; --panel: #1a1710;
     --panel-border: rgba(245,196,0,0.2); --danger: #ff4d1c; --ok: #00e5a0; --warn: #f5c400;
+    --cardboard-light: #d4956a; --cardboard-mid: #b8743e; --cardboard-dark: #8c5228;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--bg); color: var(--text); font-family: 'Rajdhani', sans-serif;
+  html { touch-action: none; overscroll-behavior: none; }
+  body {
+    background: var(--bg);
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(245,196,0,0.06) 1px, transparent 0);
+    background-size: 20px 20px;
+    color: var(--text); font-family: 'Rajdhani', sans-serif;
     height: 100dvh; overflow: hidden; display: flex; flex-direction: column;
-    align-items: center; user-select: none; -webkit-user-select: none; touch-action: manipulation; }
+    align-items: center; user-select: none; -webkit-user-select: none;
+    touch-action: none; overscroll-behavior: none;
+  }
 
   #header { width: 100%; max-width: 520px; display: flex; align-items: center;
     justify-content: space-between; padding: 5px 10px 2px; flex-shrink: 0; }
   .logo { font-family: 'Bebas Neue', cursive; font-size: 19px; letter-spacing: 3px;
     color: var(--accent); text-shadow: 0 0 20px rgba(245,196,0,0.4); line-height: 1; }
   .logo span { color: var(--dim); font-size: 8px; letter-spacing: 2px; display: block; font-family: 'Share Tech Mono', monospace; }
-  #stats-bar { display: flex; gap: 5px; }
-  .stat-chip { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 3px; padding: 2px 6px; text-align: center; }
-  .stat-chip .val { font-family: 'Share Tech Mono', monospace; font-size: 12px; color: var(--accent); display: block; line-height: 1; }
-  .stat-chip .lbl { font-size: 7px; letter-spacing: 1.5px; color: var(--dim); text-transform: uppercase; display: block; }
+  #stats-bar { display: flex; gap: 4px; }
+  .stat-chip { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 3px; padding: 2px 5px; text-align: center; }
+  .stat-chip .val { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--accent); display: block; line-height: 1; }
+  .stat-chip .lbl { font-size: 6px; letter-spacing: 1.5px; color: var(--dim); text-transform: uppercase; display: block; }
+  .stat-chip.support .val { color: #60a5fa; }
 
   #main { display: flex; flex-direction: column; align-items: center; width: 100%;
     max-width: 520px; flex: 1; overflow: hidden; padding: 0 6px; gap: 3px; }
@@ -35,7 +47,9 @@
   .bar-track { flex: 1; height: 5px; background: #1a1a14; border-radius: 2px; overflow: hidden; border: 1px solid rgba(245,196,0,0.12); }
   .bar-fill { height: 100%; width: 0%; border-radius: 2px; transition: width 0.3s; }
   #height-fill { background: linear-gradient(90deg, var(--accent3), var(--accent)); }
+  #support-fill { background: linear-gradient(90deg, #1d4ed8, #60a5fa); }
   .bar-val { font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--accent); min-width: 32px; text-align: right; }
+  #support-val { color: #60a5fa; }
   #cog-track { flex: 1; height: 5px; background: #1a1a14; border-radius: 2px; border: 1px solid rgba(245,196,0,0.12); position: relative; }
   #cog-fill { position: absolute; height: 100%; background: linear-gradient(90deg, var(--ok), var(--warn), var(--danger)); border-radius: 2px; left: 20%; width: 60%; }
   #cog-center-mark { position: absolute; top: -2px; width: 2px; height: 9px; background: var(--accent); left: 50%; transform: translateX(-50%); }
@@ -62,27 +76,39 @@
 
   .queue-row { display: flex; gap: 4px; justify-content: center; align-items: flex-end; }
 
-  .queue-slot { flex: 1; max-width: 80px; height: 54px; border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 4px; display: flex; flex-direction: column; align-items: center;
+  /* Queue slots with cardboard vibe */
+  .queue-slot { flex: 1; max-width: 80px; height: 56px; border: 1px solid rgba(180,120,60,0.25);
+    border-radius: 3px; display: flex; flex-direction: column; align-items: center;
     justify-content: center; cursor: pointer; transition: border-color 0.12s, transform 0.1s;
-    background: var(--panel); position: relative; overflow: hidden; }
-  .queue-slot.selected { border-color: var(--accent); transform: translateY(-3px); background: rgba(245,196,0,0.07); }
-  .queue-slot:hover:not(.selected) { border-color: rgba(255,255,255,0.18); }
+    background: rgba(180,120,60,0.06); position: relative; overflow: hidden; }
+  .queue-slot.selected { border-color: var(--accent); transform: translateY(-3px); background: rgba(245,196,0,0.08); }
+  .queue-slot.expiring { border-color: rgba(255,77,28,0.6); animation: expiring-pulse 0.5s infinite; }
+  @keyframes expiring-pulse { 0%,100%{background:rgba(255,77,28,0.05);} 50%{background:rgba(255,77,28,0.12);} }
+  .queue-slot:hover:not(.selected):not(.expiring) { border-color: rgba(180,120,60,0.5); }
+  .queue-slot.active-sel { border-color: var(--accent); box-shadow: 0 0 8px rgba(245,196,0,0.3); }
 
-  .smalls-slot { flex: 1; max-width: 58px; height: 42px; border: 1px solid rgba(192,132,252,0.22);
+  .smalls-slot { flex: 1; max-width: 58px; height: 44px; border: 1px solid rgba(192,132,252,0.22);
     border-radius: 3px; display: flex; flex-direction: column; align-items: center;
     justify-content: center; cursor: pointer; transition: border-color 0.12s, transform 0.1s;
     background: rgba(192,132,252,0.04); position: relative; overflow: hidden; }
   .smalls-slot.selected { border-color: var(--smalls-accent); transform: translateY(-3px); background: rgba(192,132,252,0.11); box-shadow: 0 0 10px var(--smalls-glow); }
-  .smalls-slot:hover:not(.selected) { border-color: rgba(192,132,252,0.4); }
+  .smalls-slot.expiring { border-color: rgba(255,77,28,0.5); animation: expiring-pulse 0.5s infinite; }
+  .smalls-slot:hover:not(.selected):not(.expiring) { border-color: rgba(192,132,252,0.4); }
   .smalls-slot .box-dims { color: rgba(192,132,252,0.65) !important; }
 
   .box-visual { border-radius: 2px; display: flex; align-items: center; justify-content: center;
-    font-family: 'Share Tech Mono', monospace; font-size: 5px; color: rgba(0,0,0,0.7); font-weight: bold; }
+    font-family: 'Share Tech Mono', monospace; font-size: 5px; color: rgba(0,0,0,0.55); font-weight: bold;
+    position: relative; overflow: hidden; }
   .box-dims { font-family: 'Share Tech Mono', monospace; font-size: 5px; color: var(--dim); margin-top: 1px; text-align: center; }
   .timer-bar { position: absolute; bottom: 0; left: 0; height: 2px; background: var(--accent); transition: width 0.1s linear; }
   .smalls-slot .timer-bar { background: var(--smalls-accent); }
-  .queue-slot:first-child .timer-bar { background: var(--accent2); }
+
+  /* missed parcel counter */
+  #missed-badge {
+    font-family: 'Share Tech Mono', monospace; font-size: 7px; color: var(--accent2);
+    background: rgba(255,77,28,0.1); border: 1px solid rgba(255,77,28,0.3);
+    border-radius: 2px; padding: 1px 5px; white-space: nowrap;
+  }
 
   #stash-row { display: flex; justify-content: space-between; align-items: center; gap: 5px; }
   .stash-slot { width: 52px; height: 48px; border: 1px dashed rgba(245,196,0,0.3); border-radius: 4px;
@@ -111,13 +137,13 @@
   @keyframes void-pulse { 0%,100%{opacity:1;} 50%{opacity:0.45;} }
 
   .overlay { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center;
-    justify-content: center; background: rgba(5,5,3,0.96); z-index: 100; padding: 20px; }
+    justify-content: center; background: rgba(5,4,2,0.96); z-index: 100; padding: 20px; }
   .overlay.hidden { display: none; }
   .overlay-title { font-family: 'Bebas Neue', cursive; font-size: 48px; letter-spacing: 6px;
     color: var(--accent); text-shadow: 0 0 40px rgba(245,196,0,0.5); text-align: center; line-height: 0.9; }
   .overlay-sub { font-size: 10px; letter-spacing: 3px; color: var(--dim); text-transform: uppercase;
-    margin: 8px 0 20px; font-family: 'Share Tech Mono', monospace; text-align: center; }
-  .overlay-stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; max-width: 290px; margin-bottom: 20px; }
+    margin: 8px 0 18px; font-family: 'Share Tech Mono', monospace; text-align: center; }
+  .overlay-stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; max-width: 290px; margin-bottom: 18px; }
   .ov-stat { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 4px; padding: 8px 12px; }
   .ov-stat .v { font-family: 'Bebas Neue', cursive; font-size: 26px; color: var(--accent); letter-spacing: 2px; display: block; line-height: 1; }
   .ov-stat .l { font-size: 8px; color: var(--dim); letter-spacing: 1.5px; text-transform: uppercase; font-family: 'Share Tech Mono', monospace; }
@@ -126,10 +152,10 @@
     transition: transform 0.1s, box-shadow 0.2s; box-shadow: 0 0 28px rgba(245,196,0,0.3); }
   .btn-primary:hover { transform: scale(1.03); box-shadow: 0 0 48px rgba(245,196,0,0.5); }
   .btn-primary:active { transform: scale(0.97); }
-  .diff-select { display: flex; gap: 6px; margin-bottom: 18px; flex-wrap: wrap; justify-content: center; }
+  .diff-select { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; justify-content: center; }
   .diff-btn { background: var(--panel); border: 1px solid var(--panel-border); color: var(--text);
     font-family: 'Rajdhani', sans-serif; font-size: 12px; font-weight: 500; letter-spacing: 1px;
-    padding: 7px 13px; border-radius: 3px; cursor: pointer; transition: all 0.13s; }
+    padding: 6px 13px; border-radius: 3px; cursor: pointer; transition: all 0.13s; }
   .diff-btn.active { background: rgba(245,196,0,0.15); border-color: var(--accent); color: var(--accent); }
   #tip-text { font-size: 10px; color: var(--dim); text-align: center; max-width: 280px; line-height: 1.5;
     font-family: 'Share Tech Mono', monospace; margin-top: -8px; margin-bottom: 16px; }
@@ -148,6 +174,7 @@
     pointer-events: none; z-index: 60; animation: pop-up 1s ease-out forwards; letter-spacing: 2px; }
   .score-pop.main { color: var(--accent); text-shadow: 0 0 10px rgba(245,196,0,0.6); }
   .score-pop.smalls { color: var(--smalls-accent); text-shadow: 0 0 10px var(--smalls-glow); font-size: 15px; }
+  .score-pop.miss { color: var(--accent2); font-size: 13px; }
   @keyframes pop-up { 0%{opacity:1;transform:translateY(0) scale(1);} 100%{opacity:0;transform:translateY(-46px) scale(1.3);} }
 </style>
 </head>
@@ -156,12 +183,12 @@
 <div id="smalls-flash"></div>
 
 <div id="header">
-  <div class="logo">ZEN BUILDS<span>PRECISION UNDER PRESSURE · v2</span></div>
+  <div class="logo">ZEN BUILDS<span>PRECISION UNDER PRESSURE · v3</span></div>
   <div id="stats-bar">
     <div class="stat-chip"><span class="val" id="score-val">0</span><span class="lbl">Score</span></div>
     <div class="stat-chip"><span class="val" id="pph-val">—</span><span class="lbl">PPH</span></div>
+    <div class="stat-chip support"><span class="val" id="support-val">—</span><span class="lbl">Support</span></div>
     <div class="stat-chip"><span class="val" id="tier-val">T1</span><span class="lbl">Tier</span></div>
-    <div class="stat-chip"><span class="val" id="voids-val">0</span><span class="lbl">Voids</span></div>
   </div>
 </div>
 
@@ -170,6 +197,11 @@
     <div class="status-label">HEIGHT</div>
     <div class="bar-track"><div class="bar-fill" id="height-fill"></div></div>
     <div class="bar-val" id="height-pct">0%</div>
+  </div>
+  <div class="status-row">
+    <div class="status-label">SUPPORT</div>
+    <div class="bar-track"><div class="bar-fill" id="support-fill"></div></div>
+    <div class="bar-val" id="support-pct" style="color:#60a5fa">0%</div>
   </div>
   <div class="status-row">
     <div class="status-label">COG&nbsp;BALANCE</div>
@@ -188,14 +220,13 @@
   </div>
 
   <div id="controls-area">
-    <!-- MAIN BELT -->
     <div class="conveyor-header">
       <div class="conveyor-label main">▶ MAIN BELT</div>
       <div class="roller-track"><div class="roller-fill main"></div></div>
+      <div id="missed-badge">MISSED: 0</div>
     </div>
     <div class="queue-row" id="queue-row"></div>
 
-    <!-- SMALLS BELT -->
     <div class="section-divider">
       <div class="divider-line"></div>
       <div class="divider-text">◈ SMALLS BELT — GAP FILLERS</div>
@@ -208,7 +239,6 @@
     </div>
     <div class="queue-row" id="smalls-row"></div>
 
-    <!-- STASH + ROTATE -->
     <div id="stash-row">
       <div class="stash-slot" id="stash-left" onclick="stashAction('left')">
         <span>STASH L</span><span class="stash-label">TAP</span>
@@ -224,10 +254,9 @@
   </div>
 </div>
 
-<!-- START -->
 <div class="overlay" id="start-overlay">
   <div class="overlay-title">ZEN<br>BUILDS</div>
-  <div class="overlay-sub">Dual Belt Edition · v2.0</div>
+  <div class="overlay-sub">Cardboard Wall Edition · v3</div>
   <div class="diff-select">
     <button class="diff-btn active" onclick="setDiff(1,this)">TIER 1</button>
     <button class="diff-btn" onclick="setDiff(2,this)">TIER 2</button>
@@ -235,10 +264,9 @@
     <button class="diff-btn" onclick="setDiff(4,this)">TIER 4</button>
   </div>
   <button class="btn-primary" onclick="startGame()">LOAD THE TRAILER</button>
-  <div class="tier-badge"><div class="dot"></div><span>SMALLS BELT BACKFILLS VOIDS · BALANCE COG · BUILD THE WALL</span></div>
+  <div class="tier-badge"><div class="dot"></div><span>PLACE FREELY · SUPPORT SCORE IS YOUR MULTIPLIER · SMALLS FILL THE GAPS</span></div>
 </div>
 
-<!-- GAME OVER -->
 <div class="overlay hidden" id="gameover-overlay">
   <div class="overlay-title" id="go-title">GAME<br>OVER</div>
   <div class="overlay-sub" id="go-sub">NO VALID PLACEMENTS REMAIN</div>
@@ -247,23 +275,55 @@
     <div class="ov-stat"><span class="v" id="go-score">0</span><span class="l">Final Score</span></div>
     <div class="ov-stat"><span class="v" id="go-pph">0</span><span class="l">PPH</span></div>
     <div class="ov-stat"><span class="v" id="go-eff">0%</span><span class="l">Efficiency</span></div>
-    <div class="ov-stat"><span class="v" id="go-height">0%</span><span class="l">Wall Height</span></div>
+    <div class="ov-stat"><span class="v" id="go-support">0%</span><span class="l">Support</span></div>
   </div>
   <button class="btn-primary" onclick="restartGame()">RELOAD</button>
 </div>
 
 <script>
 // ================================================================
-// ZEN BUILDS v2 — DUAL BELT ENGINE
-// Main conveyor: structural pieces
-// Smalls conveyor: 28 gap-filler piece types, void-aware
-// Full COG physics, void detection, entropy difficulty
+// ZEN BUILDS v3 — CARDBOARD WALL EDITION
+// Free placement (bounds + overlap only)
+// Support score = cosmetic multiplier, not a gate
+// Cardboard box rendering with tape + labels
+// Background grid on trailer
+// Conveyor never removes SELECTED piece — misses deduct from score
 // ================================================================
 
 const GRID_W=17, GRID_H=18, WIN_H=0.95;
 
-const BOX_PALETTE=['#4a9eff','#43c59e','#f5a623','#a855f7','#ef4444','#2ecc71','#e74c3c','#3498db','#9b59b6','#f39c12','#06b6d4','#84cc16','#fb923c'];
-const SMALLS_PALETTE=['#c084fc','#a78bfa','#818cf8','#38bdf8','#34d399','#f472b6','#fb7185','#e879f9','#67e8f9','#86efac','#fde68a','#fdba74'];
+// Cardboard color families — warm browns, tans, kraft tones
+const CARDBOARD_PALETTES = [
+  // Main pieces: kraft/tan/brown variants
+  { base:'#c8955a', light:'#ddb07a', dark:'#9a6535', tape:'rgba(210,190,120,0.7)', label:'rgba(255,250,230,0.9)' },
+  { base:'#b8834a', light:'#ce9e68', dark:'#8a5f28', tape:'rgba(200,175,100,0.7)', label:'rgba(255,248,220,0.9)' },
+  { base:'#c4a060', light:'#d8b87c', dark:'#967840', tape:'rgba(215,195,130,0.7)', label:'rgba(255,252,235,0.9)' },
+  { base:'#a87848', light:'#bf9260', dark:'#7c5428', tape:'rgba(195,170,105,0.7)', label:'rgba(250,245,220,0.9)' },
+  { base:'#d09858', light:'#e4b272', dark:'#a07038', tape:'rgba(220,200,125,0.7)', label:'rgba(255,252,230,0.9)' },
+  // Dense: darker, heavier-looking
+  { base:'#7a5530', light:'#966848', dark:'#543018', tape:'rgba(170,140,80,0.7)', label:'rgba(240,230,200,0.9)' },
+  { base:'#6e4e2c', light:'#886242', dark:'#4c3018', tape:'rgba(165,135,75,0.7)', label:'rgba(238,228,198,0.9)' },
+  // Fragile: lighter, almost white-ish cardboard
+  { base:'#e8d4a8', light:'#f4e6c0', dark:'#c4a868', tape:'rgba(230,215,160,0.8)', label:'rgba(255,255,245,0.95)' },
+  { base:'#dcc898', light:'#eedcb0', dark:'#b89c58', tape:'rgba(225,208,150,0.8)', label:'rgba(255,254,244,0.95)' },
+];
+
+// Smalls: smaller parcel colours — slightly more varied, still realistic
+const SMALLS_CARDBOARD = [
+  { base:'#c09050', light:'#d4a868', dark:'#8c6430', tape:'rgba(200,180,110,0.75)', label:'rgba(255,250,228,0.9)' },
+  { base:'#b07840', light:'#c69058', dark:'#805420', tape:'rgba(190,165,95,0.75)', label:'rgba(252,245,220,0.9)' },
+  { base:'#d8a860', light:'#ecca7c', dark:'#a87c38', tape:'rgba(218,195,120,0.75)', label:'rgba(255,252,232,0.9)' },
+  { base:'#a86840', light:'#be8058', dark:'#7c4820', tape:'rgba(185,155,88,0.75)', label:'rgba(248,240,215,0.9)' },
+  { base:'#c8a848', light:'#dcbc62', dark:'#9c7c28', tape:'rgba(210,188,108,0.75)', label:'rgba(255,251,226,0.9)' },
+  { base:'#e0c898', light:'#f0ddb2', dark:'#bc9c60', tape:'rgba(228,210,148,0.8)', label:'rgba(255,255,242,0.95)' },
+];
+
+// Label text pool — realistic box label snippets
+const LABEL_TEXT = [
+  'FRAGILE','THIS SIDE UP','HANDLE\nWITH CARE','HEAVY','DO NOT\nSTACK',
+  'KEEP DRY','RUSH','PRIORITY','STD SHIP','RETURNS',
+  'LOT A','LOT B','REF #','SKU','BATCH',
+];
 
 const MAIN_POOL={
   1:[
@@ -299,7 +359,6 @@ const MAIN_POOL={
   ]
 };
 
-// 28 SMALLS — every realistic tiny piece type a loader would grab
 const SMALLS_POOL=[
   {w:1,h:1,wc:1,sr:4,fr:0,type:'standard',n:'CUBE'},
   {w:2,h:1,wc:1,sr:4,fr:0,type:'standard',n:'CAP'},
@@ -331,9 +390,10 @@ const SMALLS_POOL=[
   {w:2,h:2,wc:2,sr:4,fr:0,type:'standard',n:'CRATE'},
 ];
 
-const DROP_RATES={1:8000,2:7000,3:6000,4:5000};
-const SMALLS_RATE=11000;
+const DROP_RATES={1:9000,2:8000,3:6500,4:5000};
+const SMALLS_RATE=13000;
 const MAIN_SZ=5, SMALLS_SZ=6;
+const MISS_PENALTY=25; // score deducted per missed (non-selected) parcel
 
 let state={}, selMain=null, selSmalls=null, selRot=false;
 let animFrame=null, dropTimer=null, smallsTimer=null, startTime=null, placedCount=0, initDiff=1, hoverCell=null;
@@ -347,7 +407,7 @@ function resize(){
   const r=document.getElementById('trailer-wrap').getBoundingClientRect();
   CW=r.width;CH=r.height;
   tC.width=pC.width=hC.width=CW; tC.height=pC.height=hC.height=CH;
-  tL=CW*.05; tT=CH*.03; tW=CW*.9; tH=CH*.94;
+  tL=CW*.05; tT=CH*.02; tW=CW*.9; tH=CH*.95;
   cW=tW/GRID_W; cH=tH/GRID_H;
 }
 
@@ -355,37 +415,75 @@ const rnd=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
 const pick=a=>a[rnd(0,a.length-1)];
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 
+// Seeded random for per-box decoration (deterministic from box id)
+function seededRand(seed) {
+  let s = seed;
+  return function() {
+    s = (s * 9301 + 49297) % 233280;
+    return s / 233280;
+  };
+}
+
+function pickPalette(box, isSmall) {
+  if(isSmall) return SMALLS_CARDBOARD[rnd(0, SMALLS_CARDBOARD.length-1)];
+  if(box.type === 'fragile') return CARDBOARD_PALETTES[7 + (Math.random() > 0.5 ? 0 : 1)];
+  if(box.type === 'dense') return CARDBOARD_PALETTES[5 + (Math.random() > 0.5 ? 0 : 1)];
+  return CARDBOARD_PALETTES[rnd(0,4)];
+}
+
 function genMain(tier){
   const t={...pick(MAIN_POOL[tier])};
-  return{...t,id:'M'+Date.now()+Math.random().toString(36).slice(2,4),color:pick(BOX_PALETTE),timerPct:1,isSmall:false};
+  const palette=pickPalette(t,false);
+  const seed=rnd(1000,9999);
+  return{...t,id:'M'+Date.now()+Math.random().toString(36).slice(2,4),
+    palette,seed,timerPct:1,isSmall:false,
+    label:pick(LABEL_TEXT)};
 }
 function genSmall(){
   const t={...pick(SMALLS_POOL)};
-  return{...t,id:'S'+Date.now()+Math.random().toString(36).slice(2,4),color:pick(SMALLS_PALETTE),timerPct:1,isSmall:true};
+  const palette=pickPalette(t,true);
+  const seed=rnd(1000,9999);
+  return{...t,id:'S'+Date.now()+Math.random().toString(36).slice(2,4),
+    palette,seed,timerPct:1,isSmall:true};
 }
 function dims(box,rot){
   if(rot&&box.type!=='irregular')return{w:box.h,h:box.w};
   return{w:box.w,h:box.h};
 }
 
+// ---- FREE PLACEMENT — bounds + overlap only ----
 function legal(grid,box,gx,gy,rot){
   const{w,h}=dims(box,rot);
   if(gx<0||gy<0||gx+w>GRID_W||gy+h>GRID_H)return false;
   for(let dy=0;dy<h;dy++)for(let dx=0;dx<w;dx++)if(grid[gy+dy][gx+dx])return false;
-  let ok=0;
-  for(let dx=0;dx<w;dx++){
-    const by=gy+h;
-    if(by===GRID_H){ok++;continue;}
-    const b=grid[by][gx+dx];
-    if(b){ok++;if(box.wc>b.box.sr||b.box.fr===1&&box.wc>2)return false;}
-  }
-  const p=ok/w;
-  return p>0&&(box.type==='dense'||p>=0.7);
+  return true;
 }
+
 function anyLegal(grid,box){
   for(let y=0;y<GRID_H;y++)for(let x=0;x<GRID_W;x++)if(legal(grid,box,x,y,false)||legal(grid,box,x,y,true))return true;
   return false;
 }
+
+// ---- SUPPORT SCORE — cosmetic multiplier ----
+// Returns 0.0–1.0: fraction of placed cells that are fully supported from below
+function calcSupportScore(grid){
+  let total=0,supported=0;
+  const seen=new Set();
+  for(let y=0;y<GRID_H;y++){
+    for(let x=0;x<GRID_W;x++){
+      const c=grid[y][x];
+      if(!c)continue;
+      total++;
+      const belowY=y+1;
+      if(belowY===GRID_H){supported++;continue;} // on floor
+      if(grid[belowY][x])supported++;
+    }
+  }
+  return total===0?1:supported/total;
+}
+
+// Support multiplier: 1.0x at 100% support, 0.5x at 0% support
+function supportMultiplier(ss){ return 0.5+ss*0.5; }
 
 function getVoids(grid){
   const v=[];
@@ -398,7 +496,7 @@ function getVoids(grid){
   return v;
 }
 
-function cog(grid){
+function calcCOG(grid){
   let mass=0,wx=0;const seen=new Set();
   for(let y=0;y<GRID_H;y++)for(let x=0;x<GRID_W;x++){
     const c=grid[y][x];
@@ -407,15 +505,20 @@ function cog(grid){
   return mass?wx/mass/GRID_W:0.5;
 }
 
-function score(){
+function calcScore(){
   const fill=()=>{let n=0;for(let r of state.grid)for(let c of r)if(c)n++;return n;};
   const eff=fill()/(GRID_W*GRID_H);
   const hp=wallH()/GRID_H;
   const el=(Date.now()-startTime)/1000;
   const pph=el>0?Math.round(placedCount/el*3600):0;
   const v=getVoids(state.grid).length;
-  let s=Math.round(eff*500+pph*.5+hp*300+(state.sp||0)*8-v*5-(state.pen||0)*10);
-  if(hp>=1)s+=1000;
+  const ss=calcSupportScore(state.grid);
+  const mult=supportMultiplier(ss);
+  // Base score
+  let base=Math.round(eff*500+pph*.5+hp*300+(state.sp||0)*8-v*3);
+  if(hp>=1)base+=1000;
+  // Apply support multiplier, subtract missed parcels penalty
+  let s=Math.round(base*mult)-(state.missed||0)*MISS_PENALTY;
   return Math.max(0,s);
 }
 
@@ -423,9 +526,7 @@ function wallH(){
   for(let y=0;y<GRID_H;y++)for(let x=0;x<GRID_W;x++)if(state.grid[y][x])return GRID_H-y;
   return 0;
 }
-
 function makeGrid(){return Array.from({length:GRID_H},()=>Array(GRID_W).fill(null));}
-
 function fillQ(){while(state.queue.length<MAIN_SZ)state.queue.push(genMain(state.tier));}
 function fillS(){while(state.smalls.length<SMALLS_SZ)state.smalls.push(genSmall());}
 
@@ -437,7 +538,10 @@ function place(isSmall,idx,gx,gy,rot){
   for(let dy=0;dy<h;dy++)for(let dx=0;dx<w;dx++)state.grid[gy+dy][gx+dx]=cell;
   if(isSmall){state.smalls.splice(idx,1);state.sp=(state.sp||0)+1;fillS();flashEl('smalls-flash');}
   else{state.queue.splice(idx,1);fillQ();}
-  placedCount++;state.score=score();state.cog=cog(state.grid);
+  placedCount++;
+  state.score=calcScore();
+  state.cog=calcCOG(state.grid);
+  state.supportScore=calcSupportScore(state.grid);
   checkCOG();checkWin();return true;
 }
 
@@ -446,7 +550,7 @@ function flashEl(id){const e=document.getElementById(id);e.classList.add('flash'
 function checkCOG(){
   const d=Math.abs(state.cog-.5);
   if(d>.35)flashEl('instability-flash');
-  if(d>.45)endGame('LOAD IMBALANCE — CENTER OF GRAVITY EXCEEDED LIMITS');
+  // No game-over from COG alone — just cosmetic warning
 }
 function checkWin(){
   const p=wallH()/GRID_H;
@@ -463,7 +567,7 @@ function stashAction(side){
   }else{
     const b=state.queue.splice(selMain,1)[0];
     if(side==='left')state.stL=b;else state.stR=b;
-    state.pen=(state.pen||0)+1;fillQ();selMain=null;
+    fillQ();selMain=null;
   }
   renderAll();
 }
@@ -474,26 +578,71 @@ function rotateSelected(){
   renderAll();
 }
 
+// ---- CONVEYOR TIMERS — never expire selected pieces ----
 function startMainTimer(){
   if(dropTimer)clearInterval(dropTimer);
   const rate=DROP_RATES[state.tier];let el=0;
   dropTimer=setInterval(()=>{
-    el+=100;if(state.queue.length)state.queue[0].timerPct=Math.max(0,1-el/rate);
+    el+=100;
+    // Tick timer only on non-selected slot 0
+    if(state.queue.length&&selMain!==0){
+      state.queue[0].timerPct=Math.max(0,1-el/rate);
+    }
     renderQueueDOM();
-    if(el>=rate){el=0;if(state.queue.length){state.queue.shift();state.pen=(state.pen||0)+1;fillQ();}
-      if(selMain!==null&&selMain>=state.queue.length)selMain=null;checkNoMoves();}
+    if(el>=rate){
+      el=0;
+      // Only expire if slot 0 is not selected
+      if(state.queue.length&&selMain!==0){
+        state.queue.shift();
+        state.missed=(state.missed||0)+1;
+        state.score=calcScore();
+        fillQ();
+        // If selected slot shifted, adjust index
+        if(selMain!==null&&selMain>0)selMain--;
+        else if(selMain===0)selMain=null;
+        // Show miss penalty pop in center of screen
+        showMissPop();
+      } else {
+        // Reset timer bar so selected piece doesn't drain
+        if(state.queue.length)state.queue[0].timerPct=1;
+      }
+      checkNoMoves();
+    }
   },100);
 }
+
 function startSmallsTimer(){
   if(smallsTimer)clearInterval(smallsTimer);
   let el=0;
   smallsTimer=setInterval(()=>{
-    el+=100;if(state.smalls.length)state.smalls[0].timerPct=Math.max(0,1-el/SMALLS_RATE);
+    el+=100;
+    if(state.smalls.length&&selSmalls!==0){
+      state.smalls[0].timerPct=Math.max(0,1-el/SMALLS_RATE);
+    }
     renderSmallsDOM();
-    if(el>=SMALLS_RATE){el=0;if(state.smalls.length)state.smalls.shift();
-      if(selSmalls!==null&&selSmalls>=state.smalls.length)selSmalls=null;fillS();}
+    if(el>=SMALLS_RATE){
+      el=0;
+      if(state.smalls.length&&selSmalls!==0){
+        state.smalls.shift();
+        // smalls miss = no penalty (supplemental belt)
+        fillS();
+        if(selSmalls!==null&&selSmalls>0)selSmalls--;
+        else if(selSmalls===0)selSmalls=null;
+      }else{
+        if(state.smalls.length)state.smalls[0].timerPct=1;
+      }
+    }
   },100);
 }
+
+function showMissPop(){
+  const e=document.createElement('div');e.className='score-pop miss';
+  e.textContent=`-${MISS_PENALTY} MISSED`;
+  e.style.left='50%';e.style.top='40%';e.style.transform='translateX(-50%)';
+  document.body.appendChild(e);
+  setTimeout(()=>e.remove(),1100);
+}
+
 function checkNoMoves(){
   const all=[...state.queue,...state.smalls];
   if(state.stL)all.push(state.stL);if(state.stR)all.push(state.stR);
@@ -506,29 +655,70 @@ function checkTierUp(){
   if(t>state.tier){state.tier=t;clearInterval(dropTimer);startMainTimer();}
 }
 
-// ---- RENDERING ----
+// ================================================================
+// RENDERING
+// ================================================================
+
 function renderTrailer(){
   tCtx.clearRect(0,0,CW,CH);
+
+  // Background grid (outside trailer too)
+  tCtx.strokeStyle='rgba(180,130,60,0.08)';tCtx.lineWidth=.5;
+  const bgStep=cW;
+  for(let x=tL;x<=tL+tW;x+=bgStep){tCtx.beginPath();tCtx.moveTo(x,0);tCtx.lineTo(x,CH);tCtx.stroke();}
+  for(let y=tT;y<=tT+tH;y+=cH){tCtx.beginPath();tCtx.moveTo(0,y);tCtx.lineTo(CW,y);tCtx.stroke();}
+
+  // Trailer background
   const g=tCtx.createLinearGradient(tL,tT,tL,tT+tH);
-  g.addColorStop(0,'rgba(30,28,18,.97)');g.addColorStop(1,'rgba(11,10,7,.99)');
-  tCtx.fillStyle=g;tCtx.beginPath();tCtx.roundRect(tL-2,tT-2,tW+4,tH+4,4);tCtx.fill();
-  tCtx.strokeStyle='rgba(245,196,0,.28)';tCtx.lineWidth=1.5;tCtx.stroke();
-  tCtx.strokeStyle='rgba(255,220,80,.045)';tCtx.lineWidth=.5;
-  for(let x=0;x<=GRID_W;x++){tCtx.beginPath();tCtx.moveTo(tL+x*cW,tT);tCtx.lineTo(tL+x*cW,tT+tH);tCtx.stroke();}
-  for(let y=0;y<=GRID_H;y++){tCtx.beginPath();tCtx.moveTo(tL,tT+y*cH);tCtx.lineTo(tL+tW,tT+y*cH);tCtx.stroke();}
+  g.addColorStop(0,'rgba(22,18,12,.96)');g.addColorStop(1,'rgba(10,8,5,.98)');
+  tCtx.fillStyle=g;
+  tCtx.beginPath();tCtx.roundRect(tL-1,tT-1,tW+2,tH+2,3);tCtx.fill();
+
+  // Trailer grid — brighter inside
+  tCtx.strokeStyle='rgba(200,155,70,0.09)';tCtx.lineWidth=.5;
+  for(let x=0;x<=GRID_W;x++){
+    tCtx.beginPath();tCtx.moveTo(tL+x*cW,tT);tCtx.lineTo(tL+x*cW,tT+tH);tCtx.stroke();
+  }
+  for(let y=0;y<=GRID_H;y++){
+    tCtx.beginPath();tCtx.moveTo(tL,tT+y*cH);tCtx.lineTo(tL+tW,tT+y*cH);tCtx.stroke();
+  }
+
+  // Trailer border
+  tCtx.strokeStyle='rgba(245,196,0,.3)';tCtx.lineWidth=1.5;
+  tCtx.beginPath();tCtx.roundRect(tL-1,tT-1,tW+2,tH+2,3);tCtx.stroke();
+
+  // Floor line
+  tCtx.strokeStyle='rgba(180,130,60,0.25)';tCtx.lineWidth=2;
+  tCtx.beginPath();tCtx.moveTo(tL,tT+tH-1);tCtx.lineTo(tL+tW,tT+tH-1);tCtx.stroke();
+
   // 95% line
-  const gy=tT+tH*(1-WIN_H);
-  tCtx.save();tCtx.strokeStyle='rgba(0,229,160,.38)';tCtx.lineWidth=1;tCtx.setLineDash([5,4]);
-  tCtx.beginPath();tCtx.moveTo(tL,gy);tCtx.lineTo(tL+tW,gy);tCtx.stroke();tCtx.setLineDash([]);
-  tCtx.fillStyle='rgba(0,229,160,.5)';tCtx.font=`${Math.max(6,cH*.35)}px Share Tech Mono`;
-  tCtx.fillText('95%',tL+3,gy-3);tCtx.restore();
+  const guideY=tT+tH*(1-WIN_H);
+  tCtx.save();tCtx.strokeStyle='rgba(0,229,160,.4)';tCtx.lineWidth=1;tCtx.setLineDash([5,4]);
+  tCtx.beginPath();tCtx.moveTo(tL,guideY);tCtx.lineTo(tL+tW,guideY);tCtx.stroke();tCtx.setLineDash([]);
+  tCtx.fillStyle='rgba(0,229,160,.55)';tCtx.font=`${Math.max(6,cH*.35)}px Share Tech Mono`;
+  tCtx.fillText('95%',tL+3,guideY-3);tCtx.restore();
 
   // Void highlight when smalls selected
   if(selSmalls!==null){
     const voids=getVoids(state.grid);
-    const a=.11+.07*Math.sin(Date.now()/280);
+    const a=.09+.06*Math.sin(Date.now()/300);
     tCtx.fillStyle=`rgba(192,132,252,${a})`;
     for(const{x,y}of voids)tCtx.fillRect(tL+x*cW+1,tT+y*cH+1,cW-2,cH-2);
+  }
+
+  // Support quality overlay — faint red on unsupported cells
+  if(state.supportScore!==undefined&&state.supportScore<0.85){
+    for(let y=0;y<GRID_H;y++){
+      for(let x=0;x<GRID_W;x++){
+        const c=state.grid[y][x];
+        if(!c)continue;
+        const belowY=y+1;
+        if(belowY<GRID_H&&!state.grid[belowY][x]){
+          tCtx.fillStyle='rgba(255,100,30,0.08)';
+          tCtx.fillRect(tL+x*cW+1,tT+y*cH+1,cW-2,cH-2);
+        }
+      }
+    }
   }
 
   // Draw boxes
@@ -539,31 +729,127 @@ function renderTrailer(){
   }
 }
 
-function drawBox(c){
-  const px=tL+c.rx*cW,py=tT+c.ry*cH,pw=c.w*cW,ph=c.h*cH;
-  const depth=1-(c.ry/GRID_H)*.045;
+// ---- CARDBOARD BOX RENDERER ----
+function drawBox(cell){
+  const px=tL+cell.rx*cW, py=tT+cell.ry*cH;
+  const pw=cell.w*cW, ph=cell.h*cH;
+  const p=cell.box.palette;
+  const depth=1-(cell.ry/GRID_H)*.03; // subtle perspective
+  const sr=seededRand(cell.box.seed||42);
+
   tCtx.save();
   tCtx.translate(px+pw/2,py+ph/2);tCtx.scale(depth,depth);tCtx.translate(-pw/2,-ph/2);
-  const bg=tCtx.createLinearGradient(0,0,0,ph);
-  bg.addColorStop(0,lighten(c.box.color,28));bg.addColorStop(1,lighten(c.box.color,-22));
-  tCtx.fillStyle=bg;tCtx.fillRect(0,0,pw-1,ph-1);
-  if(c.isSmall){tCtx.strokeStyle='rgba(192,132,252,.55)';tCtx.lineWidth=1;}
-  else{tCtx.strokeStyle='rgba(0,0,0,.3)';tCtx.lineWidth=.5;}
-  tCtx.strokeRect(.5,.5,pw-2,ph-2);
-  tCtx.strokeStyle='rgba(255,255,255,.09)';tCtx.lineWidth=.5;tCtx.strokeRect(1.5,1.5,pw-4,ph-4);
-  for(let i=0;i<Math.min(c.box.wc,5);i++){tCtx.fillStyle='rgba(0,0,0,.25)';tCtx.fillRect(2+i*3,2,2,2);}
-  if(c.box.type==='fragile'){tCtx.fillStyle='rgba(255,255,255,.5)';tCtx.font=`${Math.max(5,cH*.43)}px serif`;tCtx.textAlign='center';tCtx.textBaseline='middle';tCtx.fillText('▲',pw/2,ph/2);}
-  if(c.isSmall&&c.box.n&&pw>cW*.9&&ph>cH*.7){
-    tCtx.fillStyle='rgba(0,0,0,.5)';
-    tCtx.font=`bold ${Math.max(5,Math.min(cH*.34,8))}px Share Tech Mono`;
-    tCtx.textAlign='center';tCtx.textBaseline='middle';tCtx.fillText(c.box.n,pw/2,ph/2);
-  }
-  tCtx.restore();
-}
 
-function lighten(hex,amt){
-  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
-  return`rgb(${clamp(r+amt,0,255)},${clamp(g+amt,0,255)},${clamp(b+amt,0,255)})`;
+  // Main cardboard body
+  const bg=tCtx.createLinearGradient(0,0,pw,ph);
+  bg.addColorStop(0,p.light);
+  bg.addColorStop(0.4,p.base);
+  bg.addColorStop(1,p.dark);
+  tCtx.fillStyle=bg;
+  tCtx.fillRect(1,1,pw-2,ph-2);
+
+  // Cardboard texture — subtle horizontal corrugation lines
+  tCtx.strokeStyle='rgba(0,0,0,0.07)';tCtx.lineWidth=.5;
+  const lineSpacing=Math.max(3,cH*.4);
+  for(let ly=lineSpacing;ly<ph-2;ly+=lineSpacing){
+    tCtx.beginPath();tCtx.moveTo(2,ly);tCtx.lineTo(pw-2,ly);tCtx.stroke();
+  }
+
+  // Box edge shadow (inner bevel)
+  tCtx.strokeStyle='rgba(0,0,0,0.3)';tCtx.lineWidth=.5;
+  tCtx.strokeRect(1,1,pw-2,ph-2);
+  tCtx.strokeStyle='rgba(255,255,255,0.12)';tCtx.lineWidth=.5;
+  tCtx.strokeRect(2,2,pw-4,ph-4);
+
+  // TAPE strips — horizontal across top of box (1–2 strips)
+  const numTape=cell.w>=3?2:1;
+  for(let t=0;t<numTape;t++){
+    const tapeX=2+(sr()*pw*.3)*(t===0?0:1);
+    const tapeW=Math.min(pw*.5+(sr()*pw*.3), pw-4);
+    const tapeH=Math.max(3,cH*.18);
+    const tapeY=2+(sr()*Math.min(cH*.4,ph*.25));
+    tCtx.fillStyle=p.tape;
+    tCtx.fillRect(tapeX,tapeY,tapeW,tapeH);
+    // Tape sheen
+    tCtx.fillStyle='rgba(255,255,255,0.18)';
+    tCtx.fillRect(tapeX,tapeY,tapeW,tapeH*.4);
+  }
+
+  // Seam line (center vertical crease)
+  if(pw>cW*1.8){
+    tCtx.strokeStyle='rgba(0,0,0,0.15)';tCtx.lineWidth=.8;
+    const seamX=pw/2+(sr()-.5)*cW*.4;
+    tCtx.setLineDash([3,2]);
+    tCtx.beginPath();tCtx.moveTo(seamX,2);tCtx.lineTo(seamX,ph-2);tCtx.stroke();
+    tCtx.setLineDash([]);
+  }
+
+  // Label — small white-ish rectangle with text
+  const labelW=Math.max(cW*.8,Math.min(pw*.55,cW*3));
+  const labelH=Math.max(cH*.35,Math.min(ph*.4,cH*1.8));
+  const labelX=pw*.5-labelW*.5+(sr()-.5)*cW*.3;
+  const labelY=ph*.5-labelH*.5+(sr()-.5)*cH*.3;
+
+  if(pw>cW*.7&&ph>cH*.6){
+    // Label background
+    tCtx.fillStyle=p.label;
+    tCtx.beginPath();tCtx.roundRect(labelX,labelY,labelW,labelH,2);tCtx.fill();
+    tCtx.strokeStyle='rgba(0,0,0,0.18)';tCtx.lineWidth=.5;tCtx.stroke();
+
+    // Label text
+    const fSize=Math.max(4,Math.min(labelH*.38,cH*.28,9));
+    tCtx.fillStyle='rgba(40,30,20,0.75)';
+    tCtx.font=`bold ${fSize}px Share Tech Mono`;
+    tCtx.textAlign='center';tCtx.textBaseline='middle';
+
+    // For fragile: show warning icon instead of label
+    if(cell.box.type==='fragile'){
+      tCtx.fillStyle='rgba(180,60,20,0.8)';
+      tCtx.font=`bold ${Math.max(fSize,5)}px Share Tech Mono`;
+      tCtx.fillText('FRAGILE',labelX+labelW*.5,labelY+labelH*.5);
+    } else {
+      const txt=cell.box.label||cell.box.n||'';
+      // Wrap if needed
+      if(txt.includes('\n')){
+        const parts=txt.split('\n');
+        const lineH=fSize*1.2;
+        parts.forEach((part,i)=>{
+          tCtx.fillText(part,labelX+labelW*.5,labelY+labelH*.5+(i-(parts.length-1)*.5)*lineH);
+        });
+      }else{
+        tCtx.fillText(txt,labelX+labelW*.5,labelY+labelH*.5);
+      }
+    }
+
+    // Barcode lines (if tall enough)
+    if(labelH>cH*.8){
+      const bcX=labelX+2,bcY=labelY+labelH*.68,bcW=labelW-4,bcH=labelH*.22;
+      for(let bi=0;bi<Math.floor(bcW/2);bi++){
+        if(sr()>.4){
+          tCtx.fillStyle='rgba(0,0,0,0.6)';
+          tCtx.fillRect(bcX+bi*2,bcY,1,bcH);
+        }
+      }
+    }
+  }
+
+  // Dense: weight indicator (dark stripes)
+  if(cell.box.type==='dense'){
+    tCtx.save();tCtx.globalAlpha=0.2;tCtx.fillStyle='#000';
+    for(let si=0;si<3;si++){
+      const sx=2+si*(pw-4)/3;
+      tCtx.fillRect(sx,ph-5,Math.max(3,(pw-4)/4),3);
+    }
+    tCtx.restore();
+  }
+
+  // Smalls: purple tint edge
+  if(cell.isSmall){
+    tCtx.strokeStyle='rgba(192,132,252,0.4)';tCtx.lineWidth=1;
+    tCtx.strokeRect(1,1,pw-2,ph-2);
+  }
+
+  tCtx.restore();
 }
 
 function renderPlacement(){
@@ -577,53 +863,97 @@ function renderPlacement(){
   const{x:gx,y:gy}=hoverCell;
   const ok=legal(state.grid,box,gx,gy,selRot);
   const{w,h}=dims(box,selRot);
+
+  // Show grid cells that would be filled
   pCtx.save();
   if(ok){
-    if(isS){pCtx.fillStyle='rgba(192,132,252,.2)';pCtx.strokeStyle='rgba(192,132,252,.9)';}
-    else{pCtx.fillStyle='rgba(0,229,160,.18)';pCtx.strokeStyle='rgba(0,229,160,.9)';}
-  }else{pCtx.fillStyle='rgba(255,77,28,.17)';pCtx.strokeStyle='rgba(255,77,28,.8)';}
+    if(isS){pCtx.fillStyle='rgba(192,132,252,.18)';pCtx.strokeStyle='rgba(192,132,252,.85)';}
+    else{pCtx.fillStyle='rgba(200,180,100,.15)';pCtx.strokeStyle='rgba(245,196,0,.85)';}
+  }else{
+    pCtx.fillStyle='rgba(255,77,28,.15)';pCtx.strokeStyle='rgba(255,77,28,.8)';
+  }
   pCtx.lineWidth=1.5;
-  pCtx.fillRect(tL+gx*cW,tT+gy*cH,w*cW-1,h*cH-1);
-  pCtx.strokeRect(tL+gx*cW+.5,tT+gy*cH+.5,w*cW-2,h*cH-2);
-  pCtx.fillStyle=ok?'rgba(255,255,255,.7)':'rgba(255,100,60,.7)';
-  pCtx.font=`bold ${Math.max(7,cH*.38)}px Share Tech Mono`;
+  // Fill each cell slightly inset
+  for(let dy=0;dy<h;dy++)for(let dx=0;dx<w;dx++){
+    pCtx.fillRect(tL+(gx+dx)*cW+1,tT+(gy+dy)*cH+1,cW-2,cH-2);
+  }
+  pCtx.strokeRect(tL+gx*cW+.5,tT+gy*cH+.5,w*cW-1,h*cH-1);
+  pCtx.fillStyle=ok?'rgba(255,255,255,.8)':'rgba(255,120,80,.9)';
+  pCtx.font=`bold ${Math.max(7,cH*.36)}px Share Tech Mono`;
   pCtx.textAlign='center';pCtx.textBaseline='middle';
   pCtx.fillText(`${w}×${h}`,tL+(gx+w/2)*cW,tT+(gy+h/2)*cH);
   pCtx.restore();
 }
 
+// ---- QUEUE/SMALLS DOM ----
 function mkSlot(box,i,isS){
   const el=document.createElement('div');
   el.className=isS?'smalls-slot':'queue-slot';
   const sel=isS?(selSmalls===i):(selMain===i);
   if(sel)el.classList.add('selected');
+  const expiring=(!sel&&i===0&&(box.timerPct||1)<0.25);
+  if(expiring)el.classList.add('expiring');
   const r=sel&&selRot;
   const{w,h}=dims(box,r);
-  const mxW=isS?28:38,mxH=isS?22:28;
-  const vis=document.createElement('div');vis.className='box-visual';
-  vis.style.background=box.color;
-  vis.style.width=Math.max(7,Math.min(mxW,w*9))+'px';
-  vis.style.height=Math.max(5,Math.min(mxH,h*7))+'px';
-  if(isS&&box.n){vis.style.fontSize='5px';vis.style.color='rgba(0,0,0,.65)';vis.textContent=box.n;}
-  else vis.textContent=box.type==='fragile'?'▲':box.type==='dense'?'■':box.type==='irregular'?'◆':'';
-  const d=document.createElement('div');d.className='box-dims';d.textContent=`${w}×${h}·W${box.wc}`;
+
+  // Mini cardboard box visual
+  const vis=document.createElement('canvas');
+  const sz=isS?32:42;
+  vis.width=sz;vis.height=Math.round(sz*(h/w));
+  vis.style.width=sz+'px';vis.style.height=Math.round(sz*(h/w))+'px';
+  vis.style.borderRadius='2px';
+  drawMiniBox(vis,box,w,h,isS);
+
+  const d=document.createElement('div');d.className='box-dims';
+  d.textContent=`${w}×${h}·W${box.wc}`;
   const tb=document.createElement('div');tb.className='timer-bar';
-  tb.style.width=(i===0?(box.timerPct||1)*100:100)+'%';
+  // Only slot 0 of unselected shows draining timer
+  const showDrain=(!sel&&i===0);
+  tb.style.width=(showDrain?(box.timerPct||1)*100:100)+'%';
+  if(sel)tb.style.display='none'; // hide timer bar on selected piece
+
   el.appendChild(vis);el.appendChild(d);el.appendChild(tb);
   el.onclick=()=>{if(isS)pickSmall(i);else pickMain(i);};
   return el;
 }
 
+function drawMiniBox(canvas,box,w,h,isS){
+  const ctx=canvas.getContext('2d');
+  const cw=canvas.width,ch=canvas.height;
+  const p=box.palette||CARDBOARD_PALETTES[0];
+  const bg=ctx.createLinearGradient(0,0,cw,ch);
+  bg.addColorStop(0,p.light);bg.addColorStop(1,p.dark);
+  ctx.fillStyle=bg;ctx.fillRect(0,0,cw,ch);
+  // Corrugation
+  ctx.strokeStyle='rgba(0,0,0,0.08)';ctx.lineWidth=.5;
+  for(let ly=3;ly<ch;ly+=4){ctx.beginPath();ctx.moveTo(0,ly);ctx.lineTo(cw,ly);ctx.stroke();}
+  // Tape
+  const tp=p.tape||'rgba(210,190,120,0.7)';
+  ctx.fillStyle=tp;ctx.fillRect(2,2,cw-4,Math.max(2,ch*.2));
+  ctx.fillStyle='rgba(255,255,255,.15)';ctx.fillRect(2,2,cw-4,Math.max(1,ch*.08));
+  // Border
+  ctx.strokeStyle='rgba(0,0,0,0.3)';ctx.lineWidth=.5;ctx.strokeRect(.5,.5,cw-1,ch-1);
+  if(isS){ctx.strokeStyle='rgba(192,132,252,0.4)';ctx.lineWidth=1;ctx.strokeRect(.5,.5,cw-1,ch-1);}
+  // Label text if big enough
+  if(cw>18&&ch>12){
+    ctx.fillStyle='rgba(40,25,10,0.6)';
+    ctx.font=`bold ${Math.max(5,Math.min(ch*.3,7))}px Share Tech Mono`;
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    const txt=box.n||(box.type==='fragile'?'▲':box.type==='dense'?'■':'');
+    ctx.fillText(txt,cw/2,ch*.62);
+  }
+}
+
 function renderQueueDOM(){
   const row=document.getElementById('queue-row');row.innerHTML='';
   for(let i=0;i<state.queue.length;i++)row.appendChild(mkSlot(state.queue[i],i,false));
+  document.getElementById('missed-badge').textContent=`MISSED: ${state.missed||0}`;
 }
 function renderSmallsDOM(){
   const row=document.getElementById('smalls-row');row.innerHTML='';
   for(let i=0;i<state.smalls.length;i++)row.appendChild(mkSlot(state.smalls[i],i,true));
   const v=getVoids(state.grid).length;
   const bd=document.getElementById('void-badge');
-  document.getElementById('voids-val').textContent=v;
   if(v>0){bd.classList.add('visible');bd.textContent=`⬛ ${v} VOID${v>1?'S':''} — USE SMALLS`;}
   else bd.classList.remove('visible');
 }
@@ -634,8 +964,9 @@ function renderStash(){
     el.innerHTML='';
     if(box){
       el.classList.add('has-box');
+      const p=box.palette||CARDBOARD_PALETTES[0];
       const v=document.createElement('div');
-      v.style.cssText=`width:26px;height:18px;background:${box.color};border-radius:2px;font-size:5px;color:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;font-family:'Share Tech Mono',monospace;`;
+      v.style.cssText=`width:26px;height:18px;background:${p.base};border-radius:2px;font-size:5px;color:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;font-family:'Share Tech Mono',monospace;border:1px solid rgba(0,0,0,0.2);`;
       v.textContent=`${box.w}×${box.h}`;
       const l=document.createElement('div');l.className='stash-label';l.textContent='STASH '+(side==='left'?'L':'R');
       el.appendChild(v);el.appendChild(l);
@@ -654,6 +985,13 @@ function renderHUD(){
   const pph=el>0?Math.round(placedCount/el*3600):0;
   document.getElementById('pph-val').textContent=pph||'—';
   document.getElementById('tier-val').textContent='T'+state.tier;
+  // Support score
+  const ss=state.supportScore||1;
+  const ssP=Math.round(ss*100);
+  document.getElementById('support-fill').style.width=ssP+'%';
+  document.getElementById('support-pct').textContent=ssP+'%';
+  document.getElementById('support-val').textContent=ssP+'%';
+  // COG
   const d=Math.abs(state.cog-.5);
   document.getElementById('cog-marker').style.left=(state.cog*100)+'%';
   const cs=document.getElementById('cog-status');
@@ -662,9 +1000,7 @@ function renderHUD(){
   else if(d<.35){cs.textContent='WARN';cs.style.color='var(--accent2)';}
   else{cs.textContent='DANGER';cs.style.color='var(--danger)';}
 }
-
 function renderAll(){renderQueueDOM();renderSmallsDOM();renderStash();renderPlacement();}
-
 function loop(){renderTrailer();renderHUD();checkTierUp();animFrame=requestAnimationFrame(loop);}
 
 function pickMain(i){
@@ -678,16 +1014,24 @@ function pickSmall(i){
   renderAll();
 }
 
-// Canvas events
-function coords(e){
+// ---- POINTER EVENTS ----
+function getPointerCoords(e){
   const r=tC.getBoundingClientRect();
-  const s=e.touches?e.touches[0]:e.changedTouches?e.changedTouches[0]:e;
-  return{mx:(s.clientX-r.left)*(CW/r.width),my:(s.clientY-r.top)*(CH/r.height)};
+  const clientX=e.clientX??e.touches?.[0]?.clientX??e.changedTouches?.[0]?.clientX;
+  const clientY=e.clientY??e.touches?.[0]?.clientY??e.changedTouches?.[0]?.clientY;
+  if(clientX===undefined||clientY===undefined)return null;
+  return{mx:(clientX-r.left)*(CW/r.width),my:(clientY-r.top)*(CH/r.height)};
 }
-tC.addEventListener('mousemove',e=>{const{mx,my}=coords(e);hover(mx,my);});
-tC.addEventListener('touchmove',e=>{e.preventDefault();const{mx,my}=coords(e);hover(mx,my);},{passive:false});
-tC.addEventListener('click',e=>{const{mx,my}=coords(e);doPlace(mx,my);});
-tC.addEventListener('touchend',e=>{e.preventDefault();const{mx,my}=coords(e);doPlace(mx,my);},{passive:false});
+tC.addEventListener('pointermove',e=>{
+  if(e.pointerType==='touch')e.preventDefault();
+  const c=getPointerCoords(e);if(c)hover(c.mx,c.my);
+},{passive:false});
+tC.addEventListener('pointerdown',e=>{e.preventDefault();},{passive:false});
+tC.addEventListener('pointerup',e=>{
+  e.preventDefault();
+  const c=getPointerCoords(e);if(c)doPlace(c.mx,c.my);
+},{passive:false});
+tC.addEventListener('contextmenu',e=>e.preventDefault());
 
 function hover(mx,my){
   const gx=Math.floor((mx-tL)/cW),gy=Math.floor((my-tT)/cH);
@@ -716,6 +1060,7 @@ function showPop(x,y,t,type){
   setTimeout(()=>e.remove(),1000);
 }
 
+// ---- LIFECYCLE ----
 function setDiff(d,btn){
   initDiff=d;
   document.querySelectorAll('.diff-btn').forEach(b=>b.classList.remove('active'));
@@ -723,7 +1068,8 @@ function setDiff(d,btn){
 }
 function startGame(){
   document.getElementById('start-overlay').classList.add('hidden');
-  state={grid:makeGrid(),queue:[],smalls:[],stL:null,stR:null,score:0,tier:initDiff,cog:.5,pen:0,sp:0};
+  state={grid:makeGrid(),queue:[],smalls:[],stL:null,stR:null,
+    score:0,tier:initDiff,cog:.5,sp:0,missed:0,supportScore:1};
   fillQ();fillS();
   placedCount=0;startTime=Date.now();selMain=null;selSmalls=null;selRot=false;hoverCell=null;
   resize();renderAll();
@@ -742,6 +1088,8 @@ function endGame(reason,win=false){
   const eff=fill()/(GRID_W*GRID_H);
   const el=(Date.now()-startTime)/1000;
   const pph=el>0?Math.round(placedCount/el*3600):0;
+  const ss=state.supportScore||1;
+
   renderHeatmap();
   hC.classList.add('visible');setTimeout(()=>hC.classList.remove('visible'),2500);
   document.getElementById('go-title').innerHTML=win?(hp>=1?'PERFECT<br>LOAD':'WALL<br>COMPLETE'):'GAME<br>OVER';
@@ -749,19 +1097,21 @@ function endGame(reason,win=false){
   document.getElementById('go-score').textContent=state.score;
   document.getElementById('go-pph').textContent=pph;
   document.getElementById('go-eff').textContent=Math.round(eff*100)+'%';
-  document.getElementById('go-height').textContent=Math.round(hp*100)+'%';
-  document.getElementById('tip-text').textContent=tip(eff,state.cog,getVoids(state.grid).length,state.sp||0);
+  document.getElementById('go-support').textContent=Math.round(ss*100)+'%';
+  document.getElementById('tip-text').textContent=tipMsg(eff,state.cog,getVoids(state.grid).length,state.sp||0,ss,state.missed||0);
   document.getElementById('gameover-overlay').classList.remove('hidden');
 }
-function tip(eff,c,v,sp){
+function tipMsg(eff,c,v,sp,ss,missed){
   const t=[];
-  if(Math.abs(c-.5)>.2)t.push('Balance heavy pieces across the width — COG imbalance is a killer.');
-  if(v>5)t.push(`${v} buried voids hurt your score. Watch for the purple glow and deploy SMALLS early!`);
-  if(sp===0)t.push('You never used the SMALLS belt! Purple pieces backfill gaps for big efficiency bonuses.');
-  if(eff<.5)t.push('Low efficiency. Use SMALLS to pack the contour gaps left by large structural pieces.');
-  if(!t.length)t.push('Clean load! Keep pushing PPH and smalls utilization for elite scores.');
+  if(missed>3)t.push(`${missed} parcels missed the belt! Select pieces before the timer drains to freeze them.`);
+  if(ss<0.6)t.push(`Support score was ${Math.round(ss*100)}% — place boxes on solid footing for the score multiplier.`);
+  if(Math.abs(c-.5)>.2)t.push('COG was off-center — balance heavy pieces side-to-side for best load quality.');
+  if(v>5)t.push(`${v} buried voids found. Use the SMALLS belt to plug gaps before they get covered!`);
+  if(sp===0)t.push('Never used the SMALLS belt — small pieces fill gaps for big efficiency bonuses.');
+  if(!t.length)t.push('Outstanding load! Keep pushing support score and smalls usage for elite scores.');
   return'💡 '+t[0];
 }
+
 function renderHeatmap(){
   hCtx.clearRect(0,0,CW,CH);
   for(let y=0;y<GRID_H;y++)for(let x=0;x<GRID_W;x++){
@@ -772,6 +1122,7 @@ function renderHeatmap(){
     hCtx.fillRect(px,py,cW-1,cH-1);
   }
 }
+
 window.addEventListener('resize',resize);
 resize();
 </script>
