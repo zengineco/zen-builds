@@ -1,0 +1,1468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>ZEN BUILDS — Precision Under Pressure</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;500;700&family=Bebas+Neue&display=swap');
+
+  :root {
+    --bg: #0a0a08;
+    --trailer-bg: #111109;
+    --grid-line: rgba(255,220,80,0.07);
+    --accent: #f5c400;
+    --accent2: #ff4d1c;
+    --accent3: #00e5a0;
+    --text: #e8e0c8;
+    --dim: #6a6458;
+    --panel: #161612;
+    --panel-border: rgba(245,196,0,0.2);
+    --danger: #ff4d1c;
+    --ok: #00e5a0;
+    --warn: #f5c400;
+    --trailer-floor: rgba(90,70,30,0.4);
+    --trailer-wall: rgba(60,55,40,0.5);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    height: 100dvh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+  }
+
+  /* === HEADER === */
+  #header {
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px 4px;
+    flex-shrink: 0;
+  }
+  .logo {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 22px;
+    letter-spacing: 3px;
+    color: var(--accent);
+    text-shadow: 0 0 20px rgba(245,196,0,0.4);
+  }
+  .logo span { color: var(--dim); font-size: 10px; letter-spacing: 2px; display: block; margin-top: -4px; font-family: 'Share Tech Mono', monospace; }
+  
+  #stats-bar {
+    display: flex;
+    gap: 10px;
+  }
+  .stat-chip {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 3px;
+    padding: 3px 8px;
+    text-align: center;
+  }
+  .stat-chip .val {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 14px;
+    color: var(--accent);
+    display: block;
+    line-height: 1;
+  }
+  .stat-chip .lbl {
+    font-size: 8px;
+    letter-spacing: 1.5px;
+    color: var(--dim);
+    text-transform: uppercase;
+    display: block;
+  }
+
+  /* === MAIN LAYOUT === */
+  #main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 480px;
+    flex: 1;
+    overflow: hidden;
+    padding: 0 8px;
+    gap: 6px;
+  }
+
+  /* === HEIGHT PROGRESS BAR === */
+  #height-bar-wrap {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 2px;
+  }
+  #height-label {
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    color: var(--dim);
+    white-space: nowrap;
+    font-family: 'Share Tech Mono', monospace;
+  }
+  #height-track {
+    flex: 1;
+    height: 6px;
+    background: #1a1a14;
+    border-radius: 2px;
+    overflow: hidden;
+    border: 1px solid var(--panel-border);
+    position: relative;
+  }
+  #height-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent3), var(--accent));
+    transition: width 0.3s;
+    border-radius: 2px;
+  }
+  #height-pct { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--accent); min-width: 38px; text-align: right; }
+
+  /* === COG WARNING BAR === */
+  #cog-bar-wrap {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 2px;
+  }
+  #cog-label { font-size: 9px; letter-spacing: 1.5px; color: var(--dim); white-space: nowrap; font-family: 'Share Tech Mono', monospace; }
+  #cog-track {
+    flex: 1;
+    height: 6px;
+    background: #1a1a14;
+    border-radius: 2px;
+    border: 1px solid var(--panel-border);
+    position: relative;
+  }
+  #cog-fill {
+    position: absolute;
+    height: 100%;
+    background: linear-gradient(90deg, var(--ok), var(--warn), var(--danger));
+    border-radius: 2px;
+    transition: left 0.3s, width 0.3s;
+  }
+  #cog-center-mark {
+    position: absolute;
+    top: -2px;
+    width: 2px;
+    height: 10px;
+    background: var(--accent);
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  #cog-marker {
+    position: absolute;
+    top: -3px;
+    width: 4px;
+    height: 12px;
+    background: white;
+    border-radius: 1px;
+    transition: left 0.3s;
+    transform: translateX(-50%);
+  }
+  #cog-status { font-family: 'Share Tech Mono', monospace; font-size: 9px; min-width: 48px; text-align: right; }
+
+  /* === TRAILER CANVAS === */
+  #trailer-wrap {
+    width: 100%;
+    position: relative;
+    flex: 1;
+    min-height: 0;
+  }
+  #trailer-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    cursor: crosshair;
+  }
+
+  /* === STASH & QUEUE === */
+  #controls-area {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex-shrink: 0;
+    padding-bottom: 8px;
+  }
+
+  #stash-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 6px;
+  }
+  .stash-slot {
+    width: 56px;
+    height: 56px;
+    border: 1px dashed rgba(245,196,0,0.3);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+    color: var(--dim);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    background: var(--panel);
+    position: relative;
+    flex-direction: column;
+  }
+  .stash-slot:hover { border-color: var(--accent); }
+  .stash-slot.has-box { border-style: solid; border-color: var(--accent2); }
+  .stash-slot .stash-label { font-family: 'Share Tech Mono', monospace; font-size: 7px; color: var(--dim); margin-top: 2px; }
+
+  #action-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: center;
+  }
+  #rotate-btn {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    color: var(--accent);
+    font-family: 'Bebas Neue', cursive;
+    letter-spacing: 2px;
+    font-size: 16px;
+    padding: 6px 20px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  #rotate-btn:hover, #rotate-btn:active { background: rgba(245,196,0,0.1); border-color: var(--accent); }
+  #rotate-btn:disabled { opacity: 0.3; cursor: default; }
+  #action-hint { font-size: 9px; color: var(--dim); letter-spacing: 1.5px; text-transform: uppercase; font-family: 'Share Tech Mono', monospace; }
+
+  /* Queue */
+  #queue-row {
+    display: flex;
+    gap: 5px;
+    justify-content: center;
+    align-items: flex-end;
+  }
+  .queue-slot {
+    width: calc(20% - 4px);
+    max-width: 72px;
+    height: 60px;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s, transform 0.1s;
+    background: var(--panel);
+    position: relative;
+    overflow: hidden;
+  }
+  .queue-slot::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .queue-slot.selected { border-color: var(--accent); transform: translateY(-3px); }
+  .queue-slot.selected::before { background: rgba(245,196,0,0.08); opacity: 1; }
+  .queue-slot:hover:not(.selected) { border-color: rgba(255,255,255,0.2); }
+  .queue-slot .box-visual {
+    width: 36px;
+    height: 28px;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 7px;
+    color: rgba(0,0,0,0.7);
+    font-weight: bold;
+    text-align: center;
+    line-height: 1.2;
+  }
+  .queue-slot .box-dims {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 6px;
+    color: var(--dim);
+    margin-top: 2px;
+    text-align: center;
+  }
+  .queue-slot .timer-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    background: var(--accent);
+    transition: width 0.1s linear;
+  }
+  .queue-slot:nth-child(1) .timer-bar { background: var(--accent2); }
+
+  /* Roller conveyor visual */
+  #roller-wrap {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 2px;
+  }
+  #roller-label { font-size: 9px; letter-spacing: 1.5px; color: var(--dim); font-family: 'Share Tech Mono', monospace; white-space: nowrap; }
+  #roller-track {
+    flex: 1;
+    height: 4px;
+    background: #1a1a14;
+    border: 1px solid rgba(245,196,0,0.1);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+  }
+  #roller-fill {
+    height: 100%;
+    width: 100%;
+    background: repeating-linear-gradient(90deg, transparent, transparent 4px, var(--accent) 4px, var(--accent) 5px);
+    animation: roller-scroll 0.6s linear infinite;
+  }
+  @keyframes roller-scroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-9px); }
+  }
+
+  /* === OVERLAYS === */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(5,5,3,0.95);
+    z-index: 100;
+    padding: 24px;
+  }
+  .overlay.hidden { display: none; }
+
+  .overlay-title {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 52px;
+    letter-spacing: 6px;
+    color: var(--accent);
+    text-shadow: 0 0 40px rgba(245,196,0,0.5);
+    text-align: center;
+    line-height: 0.9;
+  }
+  .overlay-sub {
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--dim);
+    text-transform: uppercase;
+    margin: 8px 0 28px;
+    font-family: 'Share Tech Mono', monospace;
+    text-align: center;
+  }
+  .overlay-stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+    max-width: 320px;
+    margin-bottom: 28px;
+  }
+  .ov-stat {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 4px;
+    padding: 10px 14px;
+  }
+  .ov-stat .v {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 28px;
+    color: var(--accent);
+    letter-spacing: 2px;
+    display: block;
+    line-height: 1;
+  }
+  .ov-stat .l { font-size: 9px; color: var(--dim); letter-spacing: 1.5px; text-transform: uppercase; font-family: 'Share Tech Mono', monospace; }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    font-family: 'Bebas Neue', cursive;
+    font-size: 20px;
+    letter-spacing: 4px;
+    padding: 12px 48px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: transform 0.1s, box-shadow 0.2s;
+    box-shadow: 0 0 30px rgba(245,196,0,0.3);
+  }
+  .btn-primary:hover { transform: scale(1.03); box-shadow: 0 0 50px rgba(245,196,0,0.5); }
+  .btn-primary:active { transform: scale(0.97); }
+
+  .diff-select {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+  .diff-btn {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    padding: 8px 16px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .diff-btn.active { background: rgba(245,196,0,0.15); border-color: var(--accent); color: var(--accent); }
+  .diff-btn:hover { border-color: var(--accent); }
+
+  #tip-text {
+    font-size: 12px;
+    color: var(--dim);
+    text-align: center;
+    max-width: 300px;
+    line-height: 1.5;
+    font-family: 'Share Tech Mono', monospace;
+    margin-top: -12px;
+    margin-bottom: 20px;
+  }
+
+  /* instability flash */
+  #instability-flash {
+    position: fixed;
+    inset: 0;
+    background: rgba(255,77,28,0);
+    pointer-events: none;
+    z-index: 50;
+    transition: background 0.1s;
+  }
+  #instability-flash.flash { background: rgba(255,77,28,0.15); }
+
+  /* placement highlight canvas */
+  #placement-canvas {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+  }
+
+  /* Score pop */
+  .score-pop {
+    position: fixed;
+    font-family: 'Bebas Neue', cursive;
+    font-size: 22px;
+    color: var(--accent);
+    pointer-events: none;
+    z-index: 60;
+    animation: pop-up 1s ease-out forwards;
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px rgba(245,196,0,0.6);
+  }
+  @keyframes pop-up {
+    0% { opacity: 1; transform: translateY(0) scale(1); }
+    100% { opacity: 0; transform: translateY(-50px) scale(1.3); }
+  }
+
+  /* Efficiency Heatmap overlay */
+  #heatmap-canvas {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.5s;
+  }
+  #heatmap-canvas.visible { opacity: 0.6; }
+
+  .tier-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--dim);
+    border: 1px solid rgba(245,196,0,0.15);
+    border-radius: 2px;
+    padding: 2px 8px;
+    margin-top: 6px;
+  }
+  .tier-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+</style>
+</head>
+<body>
+
+<div id="instability-flash"></div>
+
+<!-- HEADER -->
+<div id="header">
+  <div class="logo">ZEN BUILDS<span>PRECISION UNDER PRESSURE</span></div>
+  <div id="stats-bar">
+    <div class="stat-chip"><span class="val" id="score-val">0</span><span class="lbl">Score</span></div>
+    <div class="stat-chip"><span class="val" id="pph-val">—</span><span class="lbl">PPH</span></div>
+    <div class="stat-chip"><span class="val" id="tier-val">T1</span><span class="lbl">Tier</span></div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+  <!-- HEIGHT PROGRESS -->
+  <div id="height-bar-wrap">
+    <div id="height-label">HEIGHT</div>
+    <div id="height-track"><div id="height-fill"></div></div>
+    <div id="height-pct">0%</div>
+  </div>
+
+  <!-- COG BAR -->
+  <div id="cog-bar-wrap">
+    <div id="cog-label">COG&nbsp;BALANCE</div>
+    <div id="cog-track">
+      <div id="cog-fill" style="left:30%;width:40%"></div>
+      <div id="cog-center-mark"></div>
+      <div id="cog-marker" style="left:50%"></div>
+    </div>
+    <div id="cog-status" style="color:var(--ok)">STABLE</div>
+  </div>
+
+  <!-- TRAILER -->
+  <div id="trailer-wrap">
+    <canvas id="trailer-canvas"></canvas>
+    <canvas id="placement-canvas"></canvas>
+    <canvas id="heatmap-canvas"></canvas>
+  </div>
+
+  <!-- CONTROLS -->
+  <div id="controls-area">
+    <!-- Roller indicator -->
+    <div id="roller-wrap">
+      <div id="roller-label">CONVEYOR</div>
+      <div id="roller-track"><div id="roller-fill"></div></div>
+    </div>
+
+    <!-- Queue -->
+    <div id="queue-row"></div>
+
+    <!-- Stash + Actions -->
+    <div id="stash-row">
+      <div class="stash-slot" id="stash-left" onclick="stashAction('left')">
+        <span>STASH L</span>
+        <span class="stash-label">TAP</span>
+      </div>
+      <div id="action-panel">
+        <button id="rotate-btn" onclick="rotateSelected()">↻ ROTATE</button>
+        <div id="action-hint">SELECT → ROTATE → PLACE</div>
+      </div>
+      <div class="stash-slot" id="stash-right" onclick="stashAction('right')">
+        <span>STASH R</span>
+        <span class="stash-label">TAP</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- START OVERLAY -->
+<div class="overlay" id="start-overlay">
+  <div class="overlay-title">ZEN<br>BUILDS</div>
+  <div class="overlay-sub">Precision Under Pressure</div>
+  <div class="diff-select">
+    <button class="diff-btn active" onclick="setDiff(1,this)">TIER 1</button>
+    <button class="diff-btn" onclick="setDiff(2,this)">TIER 2</button>
+    <button class="diff-btn" onclick="setDiff(3,this)">TIER 3</button>
+    <button class="diff-btn" onclick="setDiff(4,this)">TIER 4</button>
+  </div>
+  <button class="btn-primary" onclick="startGame()">LOAD THE TRAILER</button>
+  <div class="tier-badge"><div class="dot"></div><span>BUILD THE WALL. BALANCE THE LOAD. MASTER THE SYSTEM.</span></div>
+</div>
+
+<!-- GAME OVER OVERLAY -->
+<div class="overlay hidden" id="gameover-overlay">
+  <div class="overlay-title" id="go-title">GAME<br>OVER</div>
+  <div class="overlay-sub" id="go-sub">NO VALID PLACEMENTS REMAIN</div>
+  <div id="tip-text" class="hidden"></div>
+  <div class="overlay-stat-grid">
+    <div class="ov-stat"><span class="v" id="go-score">0</span><span class="l">Final Score</span></div>
+    <div class="ov-stat"><span class="v" id="go-pph">0</span><span class="l">PPH</span></div>
+    <div class="ov-stat"><span class="v" id="go-eff">0%</span><span class="l">Efficiency</span></div>
+    <div class="ov-stat"><span class="v" id="go-height">0%</span><span class="l">Wall Height</span></div>
+  </div>
+  <button class="btn-primary" onclick="restartGame()">RELOAD</button>
+</div>
+
+<script>
+// ============================================================
+// ZEN BUILDS — Full Engine
+// ============================================================
+
+// ---- CONSTANTS ----
+const GRID_W = 17; // 102in / 6in
+const GRID_H = 18; // 110in / 6in (approx)
+const WIN_HEIGHT_PCT = 0.95;
+const MAX_STASH = 1; // per side
+
+// Box type colors
+const BOX_COLORS = {
+  standard: '#4a9eff',
+  fragile:  '#ff9f43',
+  dense:    '#a855f7',
+  irregular:'#ef4444',
+};
+
+const BOX_PALETTE = [
+  '#4a9eff','#43c59e','#f5a623','#a855f7','#ef4444',
+  '#2ecc71','#e74c3c','#3498db','#9b59b6','#f39c12'
+];
+
+// ---- BOX DEFINITIONS ----
+const BOX_POOL_BY_TIER = {
+  1: [
+    {w:2,h:3,wc:2,sr:3,fr:0,type:'standard'},
+    {w:3,h:2,wc:2,sr:3,fr:0,type:'standard'},
+    {w:2,h:2,wc:1,sr:4,fr:0,type:'standard'},
+    {w:4,h:2,wc:2,sr:3,fr:0,type:'standard'},
+    {w:2,h:4,wc:3,sr:2,fr:0,type:'dense'},
+    {w:3,h:3,wc:3,sr:3,fr:0,type:'standard'},
+  ],
+  2: [
+    {w:2,h:3,wc:2,sr:3,fr:0,type:'standard'},
+    {w:3,h:4,wc:3,sr:2,fr:0,type:'dense'},
+    {w:1,h:3,wc:1,sr:5,fr:1,type:'fragile'},
+    {w:4,h:3,wc:4,sr:2,fr:0,type:'dense'},
+    {w:2,h:2,wc:2,sr:3,fr:0,type:'standard'},
+    {w:5,h:2,wc:3,sr:3,fr:0,type:'standard'},
+    {w:2,h:5,wc:4,sr:1,fr:0,type:'dense'},
+    {w:3,h:1,wc:1,sr:4,fr:1,type:'fragile'},
+  ],
+  3: [
+    {w:3,h:4,wc:4,sr:1,fr:0,type:'dense'},
+    {w:1,h:4,wc:1,sr:5,fr:1,type:'fragile'},
+    {w:2,h:3,wc:2,sr:3,fr:0,type:'standard'},
+    {w:4,h:4,wc:5,sr:1,fr:0,type:'dense'},
+    {w:3,h:2,wc:2,sr:4,fr:0,type:'standard'},
+    {w:2,h:6,wc:5,sr:1,fr:0,type:'irregular'},
+    {w:1,h:2,wc:1,sr:5,fr:1,type:'fragile'},
+    {w:5,h:3,wc:4,sr:2,fr:0,type:'dense'},
+    {w:3,h:3,wc:3,sr:3,fr:0,type:'standard'},
+    {w:2,h:1,wc:1,sr:5,fr:1,type:'fragile'},
+  ],
+  4: [
+    {w:3,h:5,wc:5,sr:1,fr:0,type:'dense'},
+    {w:1,h:5,wc:1,sr:5,fr:1,type:'fragile'},
+    {w:2,h:4,wc:3,sr:2,fr:0,type:'standard'},
+    {w:4,h:3,wc:5,sr:1,fr:0,type:'dense'},
+    {w:3,h:6,wc:5,sr:1,fr:0,type:'irregular'},
+    {w:2,h:2,wc:2,sr:3,fr:0,type:'standard'},
+    {w:5,h:4,wc:5,sr:1,fr:0,type:'dense'},
+    {w:1,h:3,wc:1,sr:5,fr:1,type:'fragile'},
+    {w:2,h:5,wc:4,sr:1,fr:0,type:'irregular'},
+    {w:4,h:2,wc:3,sr:3,fr:0,type:'standard'},
+  ]
+};
+
+const DROP_RATES = {1:8000, 2:7000, 3:6000, 4:5000};
+
+// ---- GAME STATE ----
+let state = {};
+let selectedQueueIdx = null;
+let selectedRotated = false;
+let animFrame = null;
+let dropTimer = null;
+let startTime = null;
+let placedCount = 0;
+let initDiff = 1;
+let hoverCell = null;
+
+// ---- CANVAS SETUP ----
+const trailerCanvas = document.getElementById('trailer-canvas');
+const tCtx = trailerCanvas.getContext('2d');
+const placementCanvas = document.getElementById('placement-canvas');
+const pCtx = placementCanvas.getContext('2d');
+const heatmapCanvas = document.getElementById('heatmap-canvas');
+const hCtx = heatmapCanvas.getContext('2d');
+
+let CW, CH, cellW, cellH, trailerLeft, trailerTop, trailerWidth, trailerHeight;
+
+function resizeCanvases() {
+  const wrap = document.getElementById('trailer-wrap');
+  const rect = wrap.getBoundingClientRect();
+  CW = rect.width;
+  CH = rect.height;
+  trailerCanvas.width = placementCanvas.width = heatmapCanvas.width = CW;
+  trailerCanvas.height = placementCanvas.height = heatmapCanvas.height = CH;
+
+  // Trailer fits with margin
+  trailerLeft = CW * 0.06;
+  trailerTop = CH * 0.04;
+  trailerWidth = CW * 0.88;
+  trailerHeight = CH * 0.91;
+
+  cellW = trailerWidth / GRID_W;
+  cellH = trailerHeight / GRID_H;
+}
+
+// ---- UTILS ----
+function rnd(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+function pick(arr){ return arr[rnd(0,arr.length-1)]; }
+function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+
+function generateBox(tier) {
+  const pool = BOX_POOL_BY_TIER[tier];
+  const tmpl = pick(pool);
+  const colorIdx = Math.floor(Math.random()*6) + (tier-1)*2;
+  return {
+    ...tmpl,
+    id: 'B'+Date.now()+Math.random().toString(36).slice(2,5),
+    color: BOX_PALETTE[Math.min(colorIdx, BOX_PALETTE.length-1)],
+    rotated: false,
+    timerPct: 1.0,
+  };
+}
+
+function getBoxDims(box, rotated) {
+  if(rotated && box.type !== 'irregular') return {w: box.h, h: box.w};
+  return {w: box.w, h: box.h};
+}
+
+// ---- PLACEMENT LEGALITY ----
+function isLegal(grid, box, gx, gy, rotated) {
+  const {w,h} = getBoxDims(box, rotated);
+  // bounds check
+  if(gx < 0 || gy < 0 || gx+w > GRID_W || gy+h > GRID_H) return false;
+  // overlap check
+  for(let dy=0; dy<h; dy++) {
+    for(let dx=0; dx<w; dx++) {
+      if(grid[gy+dy][gx+dx] !== null) return false;
+    }
+  }
+  // support check: all bottom cells must be on floor or supported
+  const supportedCount = { total: w, ok: 0 };
+  for(let dx=0; dx<w; dx++) {
+    const belowY = gy+h;
+    if(belowY === GRID_H) {
+      supportedCount.ok++;
+    } else {
+      const below = grid[belowY][gx+dx];
+      if(below !== null) {
+        supportedCount.ok++;
+        // weight constraint
+        const supportBox = below.box;
+        if(box.wc > supportBox.sr) return false;
+        // fragility
+        if(supportBox.fr === 1 && box.wc > 2) return false;
+      }
+    }
+  }
+  // 70% support rule (except dense)
+  const pct = supportedCount.ok / supportedCount.total;
+  if(box.type !== 'dense' && pct < 0.7) return false;
+  if(pct === 0) return false;
+  return true;
+}
+
+function findAllLegal(grid, box, rotated) {
+  const cells = [];
+  for(let gy=0; gy<GRID_H; gy++) {
+    for(let gx=0; gx<GRID_W; gx++) {
+      if(isLegal(grid, box, gx, gy, rotated)) cells.push({gx,gy});
+    }
+  }
+  return cells;
+}
+
+// ---- COG CALCULATION ----
+function calcCOG(grid, cells) {
+  // Returns normalized x position 0-1 (0=far left, 1=far right)
+  let totalMass = 0, weightedX = 0;
+  for(let gy=0; gy<GRID_H; gy++) {
+    for(let gx=0; gx<GRID_W; gx++) {
+      const cell = grid[gy][gx];
+      if(cell) {
+        const mass = cell.box.wc;
+        weightedX += mass * (gx + 0.5);
+        totalMass += mass;
+      }
+    }
+  }
+  if(totalMass === 0) return 0.5;
+  return (weightedX / totalMass) / GRID_W;
+}
+
+// ---- SCORING ----
+function calcScore(state) {
+  const filledCells = countFilled(state.grid);
+  const totalCells = GRID_W * GRID_H;
+  const eff = filledCells / totalCells;
+  const heightPct = getWallHeight(state.grid) / GRID_H;
+  const elapsed = (Date.now() - startTime) / 1000;
+  const pph = elapsed > 0 ? Math.round((placedCount / elapsed) * 3600) : 0;
+  const voids = calcVoids(state.grid);
+
+  let score = Math.round(
+    eff * 500 +
+    pph * 0.5 +
+    heightPct * 300 -
+    voids * 5 -
+    (state.stashPenalty || 0) * 10
+  );
+
+  if(heightPct >= 1.0) score += 1000;
+  return Math.max(0, score);
+}
+
+function countFilled(grid) {
+  let n=0;
+  for(let r of grid) for(let c of r) if(c) n++;
+  return n;
+}
+
+function getWallHeight(grid) {
+  for(let gy=0; gy<GRID_H; gy++) {
+    for(let gx=0; gx<GRID_W; gx++) {
+      if(grid[gy][gx]) return GRID_H - gy;
+    }
+  }
+  return 0;
+}
+
+function calcVoids(grid) {
+  // Count enclosed empty cells
+  let voids = 0;
+  for(let gy=0; gy<GRID_H; gy++) {
+    for(let gx=0; gx<GRID_W; gx++) {
+      if(!grid[gy][gx]) {
+        // Check if there's anything above this cell (meaning it's buried)
+        let hasAbove = false;
+        for(let ay=0; ay<gy; ay++) if(grid[ay][gx]) { hasAbove=true; break; }
+        if(hasAbove) voids++;
+      }
+    }
+  }
+  return voids;
+}
+
+// ---- GRID INIT ----
+function makeGrid() {
+  return Array.from({length:GRID_H}, ()=>Array(GRID_W).fill(null));
+}
+
+// ---- QUEUE MANAGEMENT ----
+function refillQueue() {
+  while(state.queue.length < 5) {
+    state.queue.push(generateBox(state.tier));
+  }
+}
+
+// ---- PLACE BOX ----
+function placeBox(queueIdx, gx, gy, rotated) {
+  const box = state.queue[queueIdx];
+  const {w,h} = getBoxDims(box, rotated);
+  if(!isLegal(state.grid, box, gx, gy, rotated)) return false;
+
+  for(let dy=0; dy<h; dy++) {
+    for(let dx=0; dx<w; dx++) {
+      state.grid[gy+dy][gx+dx] = {
+        box,
+        rootX: gx, rootY: gy,
+        rotated, w, h,
+        placedAt: Date.now()
+      };
+    }
+  }
+
+  state.queue.splice(queueIdx, 1);
+  placedCount++;
+  refillQueue();
+
+  state.score = calcScore(state);
+  state.cog = calcCOG(state.grid);
+
+  checkInstability();
+  checkWin();
+  return true;
+}
+
+function checkInstability() {
+  const cog = state.cog;
+  const deviation = Math.abs(cog - 0.5);
+  if(deviation > 0.35) {
+    flashDanger();
+    state.cogWarning = true;
+  } else {
+    state.cogWarning = false;
+  }
+  // Extreme imbalance = game over
+  if(deviation > 0.45) {
+    endGame('LOAD IMBALANCE — CENTER OF GRAVITY EXCEEDED LIMITS');
+  }
+}
+
+function flashDanger() {
+  const el = document.getElementById('instability-flash');
+  el.classList.add('flash');
+  setTimeout(()=>el.classList.remove('flash'), 200);
+}
+
+function checkWin() {
+  const h = getWallHeight(state.grid);
+  const pct = h / GRID_H;
+  if(pct >= 1.0) {
+    endGame('PERFECT LOAD — 100% HEIGHT ACHIEVED', true);
+  } else if(pct >= WIN_HEIGHT_PCT) {
+    endGame('WALL COMPLETE — MISSION ACCOMPLISHED', true);
+  }
+}
+
+// ---- STASH ----
+function stashAction(side) {
+  if(selectedQueueIdx === null) return;
+  const stash = side === 'left' ? state.stashLeft : state.stashRight;
+  if(stash !== null) {
+    // Swap stash with queue
+    const temp = state.queue[selectedQueueIdx];
+    state.queue[selectedQueueIdx] = stash;
+    if(side==='left') state.stashLeft = temp;
+    else state.stashRight = temp;
+  } else {
+    const box = state.queue.splice(selectedQueueIdx,1)[0];
+    if(side==='left') state.stashLeft = box;
+    else state.stashRight = box;
+    state.stashPenalty = (state.stashPenalty||0)+1;
+    refillQueue();
+    selectedQueueIdx = null;
+  }
+  renderQueue();
+  renderStash();
+}
+
+// ---- ROTATE ----
+function rotateSelected() {
+  if(selectedQueueIdx === null) return;
+  const box = state.queue[selectedQueueIdx];
+  if(box.type === 'irregular') return;
+  selectedRotated = !selectedRotated;
+  renderQueue();
+  renderPlacement();
+}
+
+// ---- DROP TIMER ----
+function startDropTimer() {
+  if(dropTimer) clearInterval(dropTimer);
+  const rate = DROP_RATES[state.tier];
+  let elapsed = 0;
+  const tick = 100;
+  dropTimer = setInterval(()=>{
+    elapsed += tick;
+    const pct = 1 - (elapsed/rate);
+    if(state.queue.length > 0) {
+      state.queue[0].timerPct = Math.max(0, pct);
+    }
+    renderQueue();
+    if(elapsed >= rate) {
+      elapsed = 0;
+      // Expire first box
+      if(state.queue.length > 0) {
+        state.queue.shift();
+        state.stashPenalty = (state.stashPenalty||0)+1;
+        refillQueue();
+      }
+      if(selectedQueueIdx !== null && selectedQueueIdx >= state.queue.length) {
+        selectedQueueIdx = state.queue.length > 0 ? 0 : null;
+      }
+      checkNoMoves();
+    }
+  }, tick);
+}
+
+function checkNoMoves() {
+  const allBoxes = [...state.queue];
+  if(state.stashLeft) allBoxes.push(state.stashLeft);
+  if(state.stashRight) allBoxes.push(state.stashRight);
+  for(const box of allBoxes) {
+    for(const rot of [false, true]) {
+      if(findAllLegal(state.grid, box, rot).length > 0) return;
+    }
+  }
+  endGame('NO VALID PLACEMENTS REMAIN');
+}
+
+// ---- DIFFICULTY SCALING ----
+function checkTierUp() {
+  const score = state.score;
+  let newTier = 1;
+  if(score > 3000) newTier = 4;
+  else if(score > 1500) newTier = 3;
+  else if(score > 600) newTier = 2;
+  if(newTier > state.tier) {
+    state.tier = newTier;
+    clearInterval(dropTimer);
+    startDropTimer();
+  }
+}
+
+// ---- RENDERING ----
+function renderTrailer() {
+  tCtx.clearRect(0,0,CW,CH);
+
+  // Trailer outer frame
+  tCtx.save();
+  const g = tCtx.createLinearGradient(trailerLeft, trailerTop, trailerLeft, trailerTop+trailerHeight);
+  g.addColorStop(0, 'rgba(30,28,20,0.95)');
+  g.addColorStop(1, 'rgba(15,14,10,0.98)');
+  tCtx.fillStyle = g;
+  tCtx.beginPath();
+  tCtx.roundRect(trailerLeft-2, trailerTop-2, trailerWidth+4, trailerHeight+4, 4);
+  tCtx.fill();
+
+  // Trailer border with perspective top taper
+  tCtx.strokeStyle = 'rgba(245,196,0,0.35)';
+  tCtx.lineWidth = 1.5;
+  tCtx.stroke();
+
+  // Floor gradient
+  tCtx.fillStyle = 'rgba(80,60,20,0.3)';
+  tCtx.fillRect(trailerLeft, trailerTop + trailerHeight - cellH*0.3, trailerWidth, cellH*0.3);
+
+  // Grid lines
+  tCtx.strokeStyle = 'rgba(255,220,80,0.055)';
+  tCtx.lineWidth = 0.5;
+  for(let x=0; x<=GRID_W; x++) {
+    tCtx.beginPath();
+    tCtx.moveTo(trailerLeft + x*cellW, trailerTop);
+    tCtx.lineTo(trailerLeft + x*cellW, trailerTop+trailerHeight);
+    tCtx.stroke();
+  }
+  for(let y=0; y<=GRID_H; y++) {
+    tCtx.beginPath();
+    tCtx.moveTo(trailerLeft, trailerTop + y*cellH);
+    tCtx.lineTo(trailerLeft+trailerWidth, trailerTop + y*cellH);
+    tCtx.stroke();
+  }
+
+  // 95% height guide line
+  const guideY = trailerTop + trailerHeight * (1 - WIN_HEIGHT_PCT);
+  tCtx.save();
+  tCtx.strokeStyle = 'rgba(0,229,160,0.4)';
+  tCtx.lineWidth = 1;
+  tCtx.setLineDash([6,4]);
+  tCtx.beginPath();
+  tCtx.moveTo(trailerLeft, guideY);
+  tCtx.lineTo(trailerLeft+trailerWidth, guideY);
+  tCtx.stroke();
+  tCtx.setLineDash([]);
+  tCtx.fillStyle = 'rgba(0,229,160,0.5)';
+  tCtx.font = `${Math.max(7, cellH*0.4)}px Share Tech Mono`;
+  tCtx.fillText('95%', trailerLeft+4, guideY-3);
+  tCtx.restore();
+
+  // Draw placed boxes with forced perspective
+  for(let gy=0; gy<GRID_H; gy++) {
+    for(let gx=0; gx<GRID_W; gx++) {
+      const cell = state.grid[gy][gx];
+      if(cell && cell.rootX === gx && cell.rootY === gy) {
+        drawBox(cell, gx, gy);
+      }
+    }
+  }
+
+  tCtx.restore();
+}
+
+function drawBox(cell, gx, gy) {
+  const {w, h} = cell;
+  const px = trailerLeft + gx * cellW;
+  const py = trailerTop + gy * cellH;
+  const pw = w * cellW;
+  const ph = h * cellH;
+
+  // Forced perspective: rows near top appear smaller
+  const depthFactor = 1 - (gy / GRID_H) * 0.04;
+
+  const col = cell.box.color;
+  
+  // Box fill with gradient
+  const bg = tCtx.createLinearGradient(px, py, px, py+ph);
+  bg.addColorStop(0, lightenHex(col, 30));
+  bg.addColorStop(1, darkenHex(col, 20));
+  tCtx.fillStyle = bg;
+  
+  // Slight perspective skew on top
+  tCtx.save();
+  tCtx.translate(px + pw/2, py + ph/2);
+  tCtx.scale(depthFactor, depthFactor);
+  tCtx.translate(-(pw/2), -(ph/2));
+  
+  tCtx.fillRect(0, 0, pw-1, ph-1);
+
+  // Border
+  tCtx.strokeStyle = 'rgba(0,0,0,0.4)';
+  tCtx.lineWidth = 0.5;
+  tCtx.strokeRect(0.5, 0.5, pw-2, ph-2);
+
+  // Inner highlight
+  tCtx.strokeStyle = 'rgba(255,255,255,0.12)';
+  tCtx.lineWidth = 0.5;
+  tCtx.strokeRect(1.5, 1.5, pw-4, ph-4);
+
+  // Weight class indicator
+  const wc = cell.box.wc;
+  tCtx.fillStyle = 'rgba(0,0,0,0.3)';
+  for(let i=0; i<Math.min(wc,5); i++) {
+    tCtx.fillRect(3 + i*3, 3, 2, 2);
+  }
+
+  // Type icon
+  if(cell.box.type === 'fragile') {
+    tCtx.fillStyle = 'rgba(255,255,255,0.5)';
+    tCtx.font = `${Math.max(6, cellH*0.5)}px serif`;
+    tCtx.textAlign = 'center';
+    tCtx.textBaseline = 'middle';
+    tCtx.fillText('▲', pw/2, ph/2);
+  }
+
+  tCtx.restore();
+}
+
+function lightenHex(hex, amt) {
+  let r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+  return `rgb(${clamp(r+amt,0,255)},${clamp(g+amt,0,255)},${clamp(b+amt,0,255)})`;
+}
+function darkenHex(hex, amt) { return lightenHex(hex, -amt); }
+
+function renderPlacement() {
+  pCtx.clearRect(0,0,CW,CH);
+  if(selectedQueueIdx === null || hoverCell === null) return;
+  const box = state.queue[selectedQueueIdx];
+  if(!box) return;
+  const {gx, gy} = hoverCell;
+  const legal = isLegal(state.grid, box, gx, gy, selectedRotated);
+  const {w,h} = getBoxDims(box, selectedRotated);
+
+  pCtx.save();
+  if(legal) {
+    pCtx.fillStyle = 'rgba(0,229,160,0.25)';
+    pCtx.strokeStyle = 'rgba(0,229,160,0.8)';
+  } else {
+    pCtx.fillStyle = 'rgba(255,77,28,0.2)';
+    pCtx.strokeStyle = 'rgba(255,77,28,0.7)';
+  }
+  pCtx.lineWidth = 1.5;
+  pCtx.fillRect(trailerLeft+gx*cellW, trailerTop+gy*cellH, w*cellW-1, h*cellH-1);
+  pCtx.strokeRect(trailerLeft+gx*cellW+0.5, trailerTop+gy*cellH+0.5, w*cellW-2, h*cellH-2);
+  pCtx.restore();
+}
+
+function renderQueue() {
+  const row = document.getElementById('queue-row');
+  row.innerHTML = '';
+  for(let i=0; i<state.queue.length; i++) {
+    const box = state.queue[i];
+    const slot = document.createElement('div');
+    slot.className = 'queue-slot' + (i===selectedQueueIdx ? ' selected' : '');
+    
+    const {w,h} = getBoxDims(box, i===selectedQueueIdx && selectedRotated);
+    
+    const vis = document.createElement('div');
+    vis.className = 'box-visual';
+    vis.style.background = box.color;
+    vis.style.width = Math.min(50, w*12) + 'px';
+    vis.style.height = Math.min(40, h*9) + 'px';
+    vis.style.fontSize = '6px';
+    vis.textContent = box.type === 'fragile' ? '▲' : (box.type === 'dense' ? '■' : (box.type === 'irregular' ? '◆' : ''));
+    
+    const dims = document.createElement('div');
+    dims.className = 'box-dims';
+    dims.textContent = `${w}×${h}·W${box.wc}`;
+    
+    const timer = document.createElement('div');
+    timer.className = 'timer-bar';
+    timer.style.width = (i===0 ? (box.timerPct||1)*100 : 100) + '%';
+    
+    slot.appendChild(vis);
+    slot.appendChild(dims);
+    slot.appendChild(timer);
+    slot.onclick = () => selectQueue(i);
+    row.appendChild(slot);
+  }
+}
+
+function selectQueue(i) {
+  if(selectedQueueIdx === i) {
+    selectedQueueIdx = null;
+    selectedRotated = false;
+  } else {
+    selectedQueueIdx = i;
+    selectedRotated = false;
+  }
+  renderQueue();
+  renderPlacement();
+}
+
+function renderStash() {
+  for(const side of ['left','right']) {
+    const el = document.getElementById('stash-'+side);
+    const box = side==='left' ? state.stashLeft : state.stashRight;
+    el.innerHTML = '';
+    if(box) {
+      el.classList.add('has-box');
+      const vis = document.createElement('div');
+      vis.style.width='32px'; vis.style.height='22px';
+      vis.style.background=box.color; vis.style.borderRadius='2px';
+      vis.style.fontSize='7px'; vis.style.color='rgba(0,0,0,0.7)';
+      vis.style.display='flex'; vis.style.alignItems='center'; vis.style.justifyContent='center';
+      vis.style.fontFamily="'Share Tech Mono', monospace";
+      vis.textContent=`${box.w}×${box.h}`;
+      const lbl = document.createElement('div');
+      lbl.className='stash-label';
+      lbl.textContent='STASH '+(side==='left'?'L':'R');
+      el.appendChild(vis);
+      el.appendChild(lbl);
+    } else {
+      el.classList.remove('has-box');
+      el.innerHTML = `<span>STASH ${side==='left'?'L':'R'}</span><span class="stash-label">EMPTY</span>`;
+    }
+  }
+}
+
+function renderHUD() {
+  const h = getWallHeight(state.grid);
+  const pct = h / GRID_H;
+  document.getElementById('height-fill').style.width = (pct*100) + '%';
+  document.getElementById('height-pct').textContent = Math.round(pct*100) + '%';
+  document.getElementById('score-val').textContent = state.score;
+
+  const elapsed = startTime ? (Date.now() - startTime)/1000 : 1;
+  const pph = elapsed > 0 ? Math.round((placedCount/elapsed)*3600) : 0;
+  document.getElementById('pph-val').textContent = pph || '—';
+  document.getElementById('tier-val').textContent = 'T'+state.tier;
+
+  // COG
+  const cog = state.cog;
+  const deviation = Math.abs(cog - 0.5);
+  const marker = document.getElementById('cog-marker');
+  marker.style.left = (cog * 100) + '%';
+  const cogStatus = document.getElementById('cog-status');
+  if(deviation < 0.1) { cogStatus.textContent='STABLE'; cogStatus.style.color='var(--ok)'; }
+  else if(deviation < 0.25) { cogStatus.textContent='CAUTION'; cogStatus.style.color='var(--warn)'; }
+  else if(deviation < 0.35) { cogStatus.textContent='WARN'; cogStatus.style.color='var(--accent2)'; }
+  else { cogStatus.textContent='DANGER'; cogStatus.style.color='var(--danger)'; }
+}
+
+function renderLoop() {
+  renderTrailer();
+  renderHUD();
+  checkTierUp();
+  animFrame = requestAnimationFrame(renderLoop);
+}
+
+// ---- CANVAS EVENTS ----
+trailerCanvas.addEventListener('mousemove', (e) => {
+  const rect = trailerCanvas.getBoundingClientRect();
+  const mx = (e.clientX - rect.left) * (CW / rect.width);
+  const my = (e.clientY - rect.top) * (CH / rect.height);
+  updateHover(mx, my);
+});
+
+trailerCanvas.addEventListener('touchmove', (e) => {
+  e.preventDefault();
+  const rect = trailerCanvas.getBoundingClientRect();
+  const t = e.touches[0];
+  const mx = (t.clientX - rect.left) * (CW / rect.width);
+  const my = (t.clientY - rect.top) * (CH / rect.height);
+  updateHover(mx, my);
+}, {passive:false});
+
+trailerCanvas.addEventListener('click', (e) => {
+  const rect = trailerCanvas.getBoundingClientRect();
+  const mx = (e.clientX - rect.left) * (CW / rect.width);
+  const my = (e.clientY - rect.top) * (CH / rect.height);
+  handleClick(mx, my);
+});
+
+trailerCanvas.addEventListener('touchend', (e) => {
+  e.preventDefault();
+  const rect = trailerCanvas.getBoundingClientRect();
+  const t = e.changedTouches[0];
+  const mx = (t.clientX - rect.left) * (CW / rect.width);
+  const my = (t.clientY - rect.top) * (CH / rect.height);
+  handleClick(mx, my);
+}, {passive:false});
+
+function updateHover(mx, my) {
+  const gx = Math.floor((mx - trailerLeft) / cellW);
+  const gy = Math.floor((my - trailerTop) / cellH);
+  if(gx >= 0 && gx < GRID_W && gy >= 0 && gy < GRID_H) {
+    hoverCell = {gx, gy};
+  } else {
+    hoverCell = null;
+  }
+  renderPlacement();
+}
+
+function handleClick(mx, my) {
+  if(selectedQueueIdx === null) return;
+  const gx = Math.floor((mx - trailerLeft) / cellW);
+  const gy = Math.floor((my - trailerTop) / cellH);
+  if(gx < 0 || gx >= GRID_W || gy < 0 || gy >= GRID_H) return;
+  
+  const box = state.queue[selectedQueueIdx];
+  if(!box) return;
+  
+  if(isLegal(state.grid, box, gx, gy, selectedRotated)) {
+    const placed = selectedQueueIdx;
+    placeBox(placed, gx, gy, selectedRotated);
+    
+    // Score pop
+    showScorePop(mx, my, '+' + Math.round(calcScore(state) - (state.prevScore||0)));
+    state.prevScore = state.score;
+    
+    selectedQueueIdx = null;
+    selectedRotated = false;
+    renderQueue();
+    renderStash();
+    renderPlacement();
+  }
+}
+
+function showScorePop(x, y, text) {
+  const el = document.createElement('div');
+  el.className = 'score-pop';
+  el.textContent = text;
+  el.style.left = x + 'px';
+  el.style.top = y + 'px';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1000);
+}
+
+// ---- GAME LIFECYCLE ----
+function setDiff(d, btn) {
+  initDiff = d;
+  document.querySelectorAll('.diff-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function startGame() {
+  document.getElementById('start-overlay').classList.add('hidden');
+  
+  state = {
+    grid: makeGrid(),
+    queue: [],
+    stashLeft: null,
+    stashRight: null,
+    score: 0,
+    tier: initDiff,
+    cog: 0.5,
+    cogWarning: false,
+    stashPenalty: 0,
+  };
+  
+  refillQueue();
+  placedCount = 0;
+  startTime = Date.now();
+  selectedQueueIdx = null;
+  selectedRotated = false;
+
+  resizeCanvases();
+  renderQueue();
+  renderStash();
+  startDropTimer();
+
+  if(animFrame) cancelAnimationFrame(animFrame);
+  renderLoop();
+}
+
+function restartGame() {
+  document.getElementById('gameover-overlay').classList.add('hidden');
+  startGame();
+}
+
+function endGame(reason, win=false) {
+  if(animFrame) cancelAnimationFrame(animFrame);
+  if(dropTimer) clearInterval(dropTimer);
+
+  const h = getWallHeight(state.grid);
+  const hPct = h/GRID_H;
+  const eff = countFilled(state.grid)/(GRID_W*GRID_H);
+  const elapsed = (Date.now()-startTime)/1000;
+  const pph = elapsed>0?Math.round((placedCount/elapsed)*3600):0;
+  const finalScore = calcScore(state);
+
+  // Show heatmap briefly
+  renderHeatmap();
+  heatmapCanvas.classList.add('visible');
+  setTimeout(()=>heatmapCanvas.classList.remove('visible'), 2000);
+
+  document.getElementById('go-title').textContent = win ? (hPct>=1?'PERFECT\nLOAD':'WALL\nCOMPLETE') : 'GAME\nOVER';
+  document.getElementById('go-sub').textContent = reason;
+  document.getElementById('go-score').textContent = finalScore;
+  document.getElementById('go-pph').textContent = pph;
+  document.getElementById('go-eff').textContent = Math.round(eff*100)+'%';
+  document.getElementById('go-height').textContent = Math.round(hPct*100)+'%';
+
+  const tipEl = document.getElementById('tip-text');
+  tipEl.textContent = getTip(eff, state.cog, calcVoids(state.grid));
+  tipEl.classList.remove('hidden');
+
+  document.getElementById('gameover-overlay').classList.remove('hidden');
+}
+
+function getTip(eff, cog, voids) {
+  const tips = [];
+  if(Math.abs(cog-0.5) > 0.2) tips.push('Balance heavy boxes evenly left-right to keep COG centered.');
+  if(voids > 5) tips.push('Fill gaps from bottom-up to avoid buried voids.');
+  if(eff < 0.5) tips.push('Use smaller boxes to fill contour gaps left by large boxes.');
+  if(tips.length === 0) tips.push('Great load! Keep optimizing PPH for higher scores.');
+  return '💡 ' + tips[0];
+}
+
+function renderHeatmap() {
+  hCtx.clearRect(0,0,CW,CH);
+  for(let gy=0; gy<GRID_H; gy++) {
+    for(let gx=0; gx<GRID_W; gx++) {
+      const cell = state.grid[gy][gx];
+      const px = trailerLeft + gx*cellW;
+      const py = trailerTop + gy*cellH;
+      if(cell) {
+        const eff = cell.box.wc / 5;
+        hCtx.fillStyle = `rgba(0,229,160,${eff*0.7})`;
+      } else {
+        // Check if void
+        let hasAbove=false;
+        for(let ay=0;ay<gy;ay++) if(state.grid[ay][gx]){hasAbove=true;break;}
+        hCtx.fillStyle = hasAbove ? 'rgba(255,77,28,0.5)' : 'transparent';
+      }
+      hCtx.fillRect(px,py,cellW-1,cellH-1);
+    }
+  }
+}
+
+// ---- RESIZE ----
+window.addEventListener('resize', () => {
+  resizeCanvases();
+});
+
+// ---- INIT ----
+resizeCanvases();
+</script>
+</body>
+</html>
