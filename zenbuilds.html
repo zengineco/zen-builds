@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>ZEN BUILDS — CUBES Edition</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=Rajdhani:wght@400;600;700&display=swap');
+:root{
+  --bg:#0e0c09;--accent:#f5c400;--a2:#ff4d1c;--ok:#00e5a0;--warn:#f5c400;--danger:#ff4d1c;
+  --dim:#52483a;--text:#e4d8c0;--panel:#16130d;--pb:rgba(245,196,0,0.15);
+  --sm:#c084fc;--lg:#f87171;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{touch-action:none;overscroll-behavior:none;height:100dvh;overflow:hidden;
+  background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;
+  user-select:none;-webkit-user-select:none;}
+body{
+  background-image:radial-gradient(circle at 1px 1px,rgba(245,196,0,0.045) 1px,transparent 0);
+  background-size:20px 20px;
+  display:flex;flex-direction:column;align-items:center;
+}
+
+/* ── HEADER ── */
+#hdr{width:100%;max-width:580px;display:flex;align-items:center;justify-content:space-between;
+  padding:4px 8px 2px;flex-shrink:0;}
+.logo{font-family:'Bebas Neue',cursive;font-size:19px;letter-spacing:3px;
+  color:var(--accent);text-shadow:0 0 18px rgba(245,196,0,.38);line-height:1;}
+.logo sub{font-size:7px;letter-spacing:2px;color:var(--dim);display:block;font-family:'Share Tech Mono',monospace;}
+#chips{display:flex;gap:3px;}
+.chip{background:var(--panel);border:1px solid var(--pb);border-radius:3px;padding:2px 5px;text-align:center;min-width:40px;}
+.chip .v{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--accent);display:block;line-height:1.1;}
+.chip .l{font-size:6px;letter-spacing:1px;color:var(--dim);text-transform:uppercase;}
+.chip.warn .v{color:var(--warn);}
+.chip.danger .v{color:var(--danger);animation:blink .5s infinite;}
+.chip.ok .v{color:var(--ok);}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+/* ── BARS ── */
+#bars{width:100%;max-width:580px;padding:0 8px;display:flex;flex-direction:column;gap:2px;flex-shrink:0;}
+.br{display:flex;align-items:center;gap:5px;}
+.bl{font-size:7px;letter-spacing:1.5px;color:var(--dim);font-family:'Share Tech Mono',monospace;white-space:nowrap;width:52px;}
+.bt{flex:1;height:4px;background:#1a1710;border-radius:2px;overflow:hidden;border:1px solid rgba(245,196,0,.09);}
+.bf{height:100%;width:0%;border-radius:2px;transition:width .25s;}
+#h-fill{background:linear-gradient(90deg,var(--ok),var(--accent));}
+#s-fill{background:linear-gradient(90deg,#1d4ed8,#60a5fa);}
+.bv{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--accent);min-width:28px;text-align:right;}
+/* COG bar */
+#cog-row{display:flex;align-items:center;gap:5px;}
+#cog-l{font-size:7px;letter-spacing:1.5px;color:var(--dim);font-family:'Share Tech Mono',monospace;width:52px;}
+#cog-t{flex:1;height:4px;background:#1a1710;border-radius:2px;border:1px solid rgba(245,196,0,.09);position:relative;}
+#cog-g{position:absolute;inset:0;background:linear-gradient(90deg,var(--danger),var(--ok),var(--danger));border-radius:2px;opacity:.35;}
+#cog-c{position:absolute;top:-2px;width:2px;height:8px;background:var(--accent);left:50%;transform:translateX(-50%);}
+#cog-d{position:absolute;top:-3px;width:5px;height:10px;background:#fff;border-radius:1px;transform:translateX(-50%);left:50%;transition:left .2s;}
+#cog-s{font-family:'Share Tech Mono',monospace;font-size:7px;min-width:44px;text-align:right;}
+
+/* ── ARENA ── */
+#arena{display:flex;width:100%;max-width:580px;flex:1;min-height:0;padding:0 4px 2px;gap:3px;}
+
+/* side panels */
+.side{width:50px;flex-shrink:0;display:flex;flex-direction:column;gap:3px;}
+.side-lbl{font-family:'Share Tech Mono',monospace;font-size:6px;letter-spacing:1.5px;
+  text-transform:uppercase;text-align:center;padding:2px 0;}
+.side-lbl.sm-lbl{color:var(--sm);}
+.side-lbl.lg-lbl{color:var(--lg);}
+
+/* smalls bag */
+#bag{flex:1;border:1px dashed rgba(192,132,252,.3);border-radius:4px;
+  background:rgba(192,132,252,.03);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;padding:4px;gap:3px;
+  cursor:pointer;position:relative;overflow:hidden;transition:border-color .2s,background .2s;}
+#bag.has{border-style:solid;border-color:rgba(192,132,252,.5);}
+#bag.sel{border-color:var(--sm);background:rgba(192,132,252,.1);box-shadow:0 0 10px rgba(192,132,252,.25);}
+#bag.stowed{border-color:rgba(0,229,160,.5);background:rgba(0,229,160,.05);}
+#bag-ico{font-size:20px;line-height:1;}
+#bag-lbl{font-family:'Share Tech Mono',monospace;font-size:7px;color:var(--sm);text-align:center;line-height:1.3;}
+#stow-btn{background:rgba(192,132,252,.12);border:1px solid rgba(192,132,252,.35);
+  border-radius:2px;padding:2px 3px;font-family:'Share Tech Mono',monospace;font-size:6px;
+  color:var(--sm);cursor:pointer;width:100%;text-align:center;margin-top:2px;line-height:1.3;}
+#stow-btn:active{background:rgba(192,132,252,.25);}
+
+/* large zone */
+#lgz{flex:1;border:1px dashed rgba(248,113,113,.3);border-radius:4px;
+  background:rgba(248,113,113,.03);display:flex;flex-direction:column;
+  align-items:center;padding:4px;gap:2px;position:relative;overflow:hidden;}
+#lgz.pulse{border-color:rgba(248,113,113,.8);animation:lgpulse .5s infinite;}
+@keyframes lgpulse{0%,100%{background:rgba(248,113,113,.03);}50%{background:rgba(248,113,113,.1);}}
+#lg-bar{position:absolute;bottom:0;left:0;height:3px;background:var(--lg);width:0%;transition:width .15s;}
+.lg-prev{width:42px;border-radius:2px;flex-shrink:0;cursor:pointer;display:block;}
+.lg-prev.sel{outline:2px solid var(--lg);outline-offset:1px;}
+#lgz-msg{font-family:'Share Tech Mono',monospace;font-size:6px;color:var(--lg);text-align:center;line-height:1.4;padding:2px;margin-top:auto;}
+#lg-previews{display:flex;flex-direction:column;gap:2px;align-items:center;width:100%;}
+
+/* trailer */
+#tw{flex:1;position:relative;min-width:0;}
+#tc{width:100%;height:100%;display:block;cursor:crosshair;}
+#pc{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;}
+#hmc{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;opacity:0;transition:opacity .5s;}
+#hmc.vis{opacity:.7;}
+
+/* ── QUEUE AREA ── */
+#q-hdr{width:100%;max-width:580px;display:flex;align-items:center;justify-content:space-between;
+  padding:2px 8px;flex-shrink:0;}
+.q-lbl{font-family:'Share Tech Mono',monospace;font-size:7px;letter-spacing:1.5px;color:var(--dim);text-transform:uppercase;}
+#rot-btn{background:var(--panel);border:1px solid var(--pb);color:var(--accent);
+  font-family:'Bebas Neue',cursive;font-size:13px;letter-spacing:2px;padding:3px 12px;
+  border-radius:3px;cursor:pointer;transition:background .1s;}
+#rot-btn:active{background:rgba(245,196,0,.12);}
+#lift-btn{background:rgba(96,165,250,.12);border:1px solid rgba(96,165,250,.35);color:#60a5fa;
+  font-family:'Share Tech Mono',monospace;font-size:7px;letter-spacing:1px;padding:3px 8px;
+  border-radius:3px;cursor:pointer;display:none;}
+#lift-btn.vis{display:block;}
+
+#qa{width:100%;max-width:580px;padding:0 4px 4px;flex-shrink:0;}
+#qg{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;}
+.qs{height:52px;border:1px solid rgba(180,120,60,.18);border-radius:3px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  cursor:pointer;transition:border-color .1s,transform .1s;
+  background:rgba(180,120,60,.04);position:relative;overflow:hidden;}
+.qs.sel{border-color:var(--accent);transform:translateY(-3px);background:rgba(245,196,0,.07);}
+.qs.is-sm{border-color:rgba(192,132,252,.28);background:rgba(192,132,252,.04);}
+.qs.is-sm.sel{border-color:var(--sm);}
+.qs.is-lg{border-color:rgba(248,113,113,.35);background:rgba(248,113,113,.05);}
+.qs.is-lg.sel{border-color:var(--lg);}
+.qs.lifted{border-color:#60a5fa;border-style:dashed;background:rgba(96,165,250,.07);animation:blink .6s infinite;}
+.qs:hover:not(.sel):not(.lifted){border-color:rgba(200,155,70,.35);}
+.qd{font-family:'Share Tech Mono',monospace;font-size:5px;color:var(--dim);margin-top:1px;text-align:center;}
+
+/* ── OVERLAYS ── */
+.ov{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;background:rgba(4,3,1,.96);z-index:100;padding:20px;gap:8px;}
+.ov.hidden{display:none;}
+.ovt{font-family:'Bebas Neue',cursive;font-size:46px;letter-spacing:5px;
+  color:var(--accent);text-shadow:0 0 40px rgba(245,196,0,.5);text-align:center;line-height:.9;}
+.ovs{font-size:9px;letter-spacing:3px;color:var(--dim);text-transform:uppercase;
+  font-family:'Share Tech Mono',monospace;text-align:center;max-width:340px;line-height:1.5;}
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;max-width:300px;}
+.sg{background:var(--panel);border:1px solid var(--pb);border-radius:4px;padding:8px 12px;}
+.sg .v{font-family:'Bebas Neue',cursive;font-size:26px;color:var(--accent);letter-spacing:2px;display:block;line-height:1;}
+.sg .l{font-size:7px;color:var(--dim);letter-spacing:1.5px;text-transform:uppercase;font-family:'Share Tech Mono',monospace;}
+.btn-p{background:var(--accent);color:#000;border:none;font-family:'Bebas Neue',cursive;
+  font-size:18px;letter-spacing:4px;padding:10px 40px;border-radius:3px;cursor:pointer;
+  box-shadow:0 0 28px rgba(245,196,0,.3);transition:transform .1s;}
+.btn-p:active{transform:scale(.97);}
+.drow{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;}
+.db{background:var(--panel);border:1px solid var(--pb);color:var(--text);
+  font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:600;padding:6px 14px;
+  border-radius:3px;cursor:pointer;transition:all .12s;}
+.db.on{background:rgba(245,196,0,.15);border-color:var(--accent);color:var(--accent);}
+#tip{font-size:9px;color:var(--dim);text-align:center;max-width:320px;line-height:1.55;
+  font-family:'Share Tech Mono',monospace;}
+.tbadge{display:inline-flex;align-items:center;gap:5px;font-family:'Share Tech Mono',monospace;
+  font-size:7px;letter-spacing:1.5px;color:var(--dim);border:1px solid rgba(245,196,0,.12);
+  border-radius:2px;padding:2px 8px;text-align:center;}
+.tbadge .dot{width:5px;height:5px;border-radius:50%;background:var(--accent);animation:dp 1.5s infinite;flex-shrink:0;}
+@keyframes dp{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+/* ── FLASH OVERLAYS ── */
+.fo{position:fixed;inset:0;pointer-events:none;z-index:50;transition:background .12s;}
+#fl-d{background:rgba(255,77,28,0);}#fl-d.on{background:rgba(255,77,28,.17);}
+#fl-g{background:rgba(0,229,160,0);}#fl-g.on{background:rgba(0,229,160,.1);}
+/* TETRIS / FART banner */
+#banner{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-family:'Bebas Neue',cursive;letter-spacing:3px;color:var(--accent);
+  text-shadow:0 0 30px rgba(245,196,0,.8);text-align:center;
+  padding:12px 22px;background:rgba(0,0,0,.85);border-radius:5px;
+  border:2px solid var(--accent);pointer-events:none;z-index:60;
+  opacity:0;transition:opacity .3s;font-size:clamp(16px,4vw,32px);}
+#banner.vis{opacity:1;}
+/* score pops */
+.sp{position:fixed;font-family:'Bebas Neue',cursive;pointer-events:none;z-index:65;
+  animation:spu 1s ease-out forwards;letter-spacing:2px;}
+@keyframes spu{0%{opacity:1;transform:translateY(0) scale(1);}100%{opacity:0;transform:translateY(-52px) scale(1.3);}}
+/* PPH warning */
+#pph-warn{position:fixed;bottom:28%;left:50%;transform:translateX(-50%);
+  font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:2px;
+  color:var(--danger);background:rgba(0,0,0,.82);border:1px solid var(--danger);
+  border-radius:3px;padding:4px 12px;pointer-events:none;z-index:52;
+  opacity:0;transition:opacity .4s;}
+#pph-warn.vis{opacity:1;}
+/* lifted indicator */
+#lift-ind{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;
+  color:#60a5fa;background:rgba(0,0,0,.8);border:1px solid rgba(96,165,250,.4);
+  border-radius:3px;padding:4px 12px;pointer-events:none;z-index:52;
+  opacity:0;transition:opacity .2s;}
+#lift-ind.vis{opacity:1;}
+</style>
+</head>
+<body>
+<div class="fo" id="fl-d"></div>
+<div class="fo" id="fl-g"></div>
+<div id="banner">TETRIS!</div>
+<div id="pph-warn">⚠ PPH TOO LOW — PICK UP THE PACE!</div>
+<div id="lift-ind">📦 PIECE LIFTED — PLACE TO MOVE</div>
+
+<!-- HEADER -->
+<div id="hdr">
+  <div class="logo">ZEN BUILDS<sub>CUBES EDITION · v4</sub></div>
+  <div id="chips">
+    <div class="chip" id="chip-score"><span class="v" id="cv-score">0</span><span class="l">CUBES</span></div>
+    <div class="chip" id="chip-pph"><span class="v" id="cv-pph">—</span><span class="l">PPH</span></div>
+    <div class="chip" id="chip-eff"><span class="v" id="cv-eff">0%</span><span class="l">PACK</span></div>
+    <div class="chip" id="chip-sup"><span class="v" id="cv-sup">—</span><span class="l">SUPP</span></div>
+  </div>
+</div>
+
+<!-- STATUS BARS -->
+<div id="bars">
+  <div class="br"><div class="bl">WALL HT</div><div class="bt"><div class="bf" id="h-fill"></div></div><div class="bv" id="h-pct">0%</div></div>
+  <div class="br"><div class="bl">SUPPORT</div><div class="bt"><div class="bf" id="s-fill"></div></div><div class="bv" id="s-pct" style="color:#60a5fa">—</div></div>
+  <div id="cog-row">
+    <div id="cog-l" class="bl">COG</div>
+    <div id="cog-t"><div id="cog-g"></div><div id="cog-c"></div><div id="cog-d"></div></div>
+    <div id="cog-s" style="color:var(--ok)">STABLE</div>
+  </div>
+</div>
+
+<!-- ARENA -->
+<div id="arena">
+  <!-- SMALLS BAG (left) -->
+  <div class="side">
+    <div class="side-lbl sm-lbl">SMALLS<br>BAG</div>
+    <div id="bag" onclick="bagClick()">
+      <div id="bag-ico">🎒</div>
+      <div id="bag-lbl">EMPTY</div>
+      <button id="stow-btn" onclick="bagStow(event)" style="display:none">STOW<br>TOP +200</button>
+    </div>
+  </div>
+
+  <!-- TRAILER -->
+  <div id="tw">
+    <canvas id="tc"></canvas>
+    <canvas id="pc"></canvas>
+    <canvas id="hmc"></canvas>
+  </div>
+
+  <!-- LARGE BOX ZONE (right) -->
+  <div class="side">
+    <div class="side-lbl lg-lbl">HEAVY<br>ZONE</div>
+    <div id="lgz">
+      <div id="lg-bar"></div>
+      <div id="lg-previews"></div>
+      <div id="lgz-msg">LOAD<br>HEAVIES<br>AT<br>BOTTOM</div>
+    </div>
+  </div>
+</div>
+
+<!-- QUEUE HEADER -->
+<div id="q-hdr">
+  <div class="q-lbl">▶ 10 PIECES — PLACE TO UNLOCK NEW</div>
+  <div style="display:flex;gap:4px;align-items:center;">
+    <button id="lift-btn" onclick="cancelLift()">✕ CANCEL LIFT</button>
+    <button id="rot-btn" onclick="rotateSel()">↻ ROTATE</button>
+  </div>
+</div>
+
+<!-- QUEUE -->
+<div id="qa"><div id="qg"></div></div>
+
+<!-- START OVERLAY -->
+<div class="ov" id="ov-start">
+  <div class="ovt">ZEN<br>BUILDS</div>
+  <div class="ovs">CUBES SCORING · FORM + SPEED · BUILD THE PERFECT WALL</div>
+  <div class="drow">
+    <button class="db on" onclick="setDiff(1,this)">EASY</button>
+    <button class="db" onclick="setDiff(2,this)">NORMAL</button>
+    <button class="db" onclick="setDiff(3,this)">HARD</button>
+    <button class="db" onclick="setDiff(4,this)">ELITE</button>
+  </div>
+  <button class="btn-p" onclick="startGame()">LOAD THE TRAILER</button>
+  <div class="tbadge"><div class="dot"></div>
+    <span>SHELVES SCORE · COLUMNS PENALIZE · T&amp;I PATTERNS REWARDED · STOW SMALLS BAG FOR BONUS</span>
+  </div>
+</div>
+
+<!-- GAMEOVER OVERLAY -->
+<div class="ov hidden" id="ov-end">
+  <div class="ovt" id="end-title">GAME<br>OVER</div>
+  <div class="ovs" id="end-sub"></div>
+  <div id="tip"></div>
+  <div class="sgrid">
+    <div class="sg"><span class="v" id="es-score">0</span><span class="l">CUBES Score</span></div>
+    <div class="sg"><span class="v" id="es-pph">0</span><span class="l">PPH</span></div>
+    <div class="sg"><span class="v" id="es-eff">0%</span><span class="l">Pack Efficiency</span></div>
+    <div class="sg"><span class="v" id="es-sup">0%</span><span class="l">Support Score</span></div>
+  </div>
+  <button class="btn-p" onclick="restartGame()">RELOAD</button>
+</div>
+
+<script>
+// ================================================================
+// ZEN BUILDS v4 — CUBES EDITION  (complete rewrite)
+//
+// PHYSICS:
+//   • Floating = illegal (must have >50% of base cells on floor or occupied cell)
+//   • Overhang up to 49% of width is fine
+//
+// QUEUE: 10 mixed pieces (small/regular/large). Place one → one new arrives.
+//        No expiration. Select a piece from queue. Click trailer to place.
+//        Click a PLACED box to LIFT it back into the queue (move mechanic).
+//
+// SMALLS BAG (left panel):
+//   • One special smalls piece. Click to activate (select for placement).
+//   • Or click STOW → places bag at top of wall = +200 bonus, removes bag.
+//
+// LARGE ZONE (right panel):
+//   • Shows large pieces in queue as previews.
+//   • If a large box sits in the upper half of the trailer for >15s → FAIL.
+//
+// FAIL CONDITIONS:
+//   • PPH < 60 for > 120 consecutive seconds (grace: first 30s)
+//   • Large box in upper half > 15s
+//   • Wall instability: ≥3 heavy boxes fully supported only by smalls
+//   • No legal placement exists for any piece
+//
+// CUBES SCORING (Cubic Utility Based on Engineering Standard):
+//   Base = efficiency × height × pack density
+//   × Speed multiplier (PPH-based, 0.5–2.0×)
+//   × Support multiplier (0.6–1.0×)
+//   + Shelf bonus (≥80% row fill = +80pts per row; 100% = +160)
+//   + T/I pattern bonus (+120 each detected)
+//   − Column penalty (vertical stack ≥3 = −40 each)
+//   − Void/gap penalty (−8 per buried void)
+//   − COG deviation penalty
+//   − Smalls-at-bottom minor penalty (−5 each)
+//   + Stow bonus (+200)
+//   + Tetris bonus (+500 per full row cleared)
+//   "You can't fit a fart" — total voids ≤2 when wall ≥50% height → special banner
+// ================================================================
+
+const GW=17,GH=18,WIN_H=0.95;
+const STOW_BONUS=200,TETRIS_BONUS=500;
+const MIN_PPH=60,LOW_PPH_GRACE=30,LOW_PPH_FAIL=120;
+const LARGE_DANGER_FAIL=15; // seconds
+
+// ──── PIECE POOLS ────
+const P_SMALL=[
+  {w:1,h:1,wc:1,type:'small',n:'CUBE'},{w:2,h:1,wc:1,type:'small',n:'CAP'},
+  {w:1,h:2,wc:1,type:'small',n:'SLIM'},{w:3,h:1,wc:1,type:'small',n:'SHELF'},
+  {w:1,h:3,wc:1,type:'small',n:'POST'},{w:2,h:2,wc:2,type:'small',n:'TILE'},
+  {w:4,h:1,wc:1,type:'small',n:'PLANK'},{w:1,h:4,wc:1,type:'small',n:'RAIL'},
+  {w:3,h:2,wc:2,type:'small',n:'BRICK'},{w:2,h:3,wc:2,type:'small',n:'BLOCK'},
+  {w:5,h:1,wc:1,type:'small',n:'STRIP'},{w:2,h:2,wc:2,type:'small',n:'CRATE'},
+  {w:4,h:2,wc:2,type:'small',n:'PAD'},{w:6,h:1,wc:1,type:'small',n:'BOARD'},
+  {w:1,h:1,wc:2,type:'small',n:'PEG'},{w:3,h:1,wc:2,type:'small',n:'BAR'},
+];
+const P_REG=[
+  {w:2,h:3,wc:2,type:'regular'},{w:3,h:2,wc:2,type:'regular'},
+  {w:2,h:4,wc:3,type:'regular'},{w:3,h:3,wc:3,type:'regular'},
+  {w:4,h:2,wc:2,type:'regular'},{w:4,h:3,wc:3,type:'regular'},
+  {w:3,h:4,wc:3,type:'regular'},{w:5,h:2,wc:2,type:'regular'},
+  {w:2,h:5,wc:3,type:'regular'},{w:5,h:3,wc:3,type:'regular'},
+  {w:4,h:4,wc:3,type:'regular'},{w:6,h:2,wc:3,type:'regular'},
+  {w:3,h:5,wc:3,type:'regular'},{w:5,h:4,wc:4,type:'regular'},
+  {w:2,h:6,wc:3,type:'regular'},{w:6,h:3,wc:4,type:'regular'},
+  {w:7,h:2,wc:3,type:'regular'},{w:3,h:6,wc:4,type:'regular'},
+];
+const P_LARGE=[
+  {w:4,h:5,wc:4,type:'large'},{w:5,h:4,wc:5,type:'large'},
+  {w:6,h:4,wc:5,type:'large'},{w:4,h:6,wc:5,type:'large'},
+  {w:5,h:5,wc:5,type:'large'},{w:6,h:5,wc:5,type:'large'},
+  {w:7,h:3,wc:4,type:'large'},{w:7,h:4,wc:5,type:'large'},
+  {w:5,h:6,wc:5,type:'large'},{w:8,h:3,wc:4,type:'large'},
+];
+
+// ──── CARDBOARD PALETTES ────
+const CB=[
+  {b:'#c8955a',l:'#ddb07a',d:'#9a6535',t:'rgba(210,190,120,.6)'},
+  {b:'#b8834a',l:'#ce9e68',d:'#8a5f28',t:'rgba(200,175,100,.6)'},
+  {b:'#c4a060',l:'#d8b87c',d:'#967840',t:'rgba(215,195,130,.6)'},
+  {b:'#a87848',l:'#bf9260',d:'#7c5428',t:'rgba(195,170,105,.6)'},
+  {b:'#d09858',l:'#e4b272',d:'#a07038',t:'rgba(220,200,125,.6)'},
+  {b:'#7a5530',l:'#966848',d:'#543018',t:'rgba(170,140,80,.6)'},  // dense/large
+  {b:'#e8d4a8',l:'#f4e6c0',d:'#c4a868',t:'rgba(230,215,160,.7)'}, // light/small
+];
+const CB_SMALL={b:'#c8a060',l:'#dcc07a',d:'#966030',t:'rgba(210,185,110,.6)'};
+const CB_LARGE={b:'#7a3a20',l:'#9a5035',d:'#5a2810',t:'rgba(150,110,65,.65)'};
+const LABELS=['FRAGILE','THIS SIDE UP','HANDLE W/CARE','HEAVY','DO NOT STACK','KEEP DRY',
+  'RUSH','PRIORITY','STD SHIP','LOT A','LOT B','REF #','SKU','EXPRESS','RETURNS'];
+
+// ──── STATE ────
+let G={},selIdx=null,selRot=false;
+let liftedBox=null; // box template being moved (lifted from wall)
+let bagActive=false,bagStowed=false;
+let animF=null,startT=null,placed=0,diff=1,hCell=null;
+let pphLowSec=0,lgDangerSec=0,gOver=false;
+let lastLoopT=0;
+
+// canvas
+const tc=document.getElementById('tc'),tCtx=tc.getContext('2d');
+const pc=document.getElementById('pc'),pCtx=pc.getContext('2d');
+const hmc=document.getElementById('hmc'),hmCtx=hmc.getContext('2d');
+let CW,CH,cW,cH,tL,tT,tW,tH;
+
+function resz(){
+  const r=document.getElementById('tw').getBoundingClientRect();
+  CW=r.width;CH=r.height;
+  tc.width=pc.width=hmc.width=CW;tc.height=pc.height=hmc.height=CH;
+  tL=CW*.04;tT=CH*.02;tW=CW*.92;tH=CH*.96;
+  cW=tW/GW;cH=tH/GH;
+}
+
+// ──── UTILS ────
+const rnd=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const pick=a=>a[rnd(0,a.length-1)];
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function sRand(s){let x=s;return()=>{x=(x*9301+49297)%233280;return x/233280;};}
+
+function getDims(box,rot){
+  if(rot&&box.type!=='large')return{w:box.h,h:box.w};
+  return{w:box.w,h:box.h};
+}
+
+function pickPal(box){
+  if(box.type==='small')return CB_SMALL;
+  if(box.type==='large')return CB_LARGE;
+  if(box.wc>=4)return CB[5];
+  return CB[rnd(0,4)];
+}
+
+function genPiece(tier){
+  const r=Math.random();
+  const sc=tier===1?.32:tier===2?.24:tier===3?.18:.14;
+  const lc=tier===1?.08:tier===2?.14:tier===3?.22:.30;
+  let tmpl;
+  if(r<sc)tmpl={...pick(P_SMALL)};
+  else if(r<sc+lc)tmpl={...pick(P_LARGE)};
+  else tmpl={...pick(P_REG)};
+  const pal=pickPal(tmpl);
+  return{...tmpl,id:'P'+Date.now().toString(36)+Math.random().toString(36).slice(2,4),
+    pal,label:pick(LABELS),seed:rnd(100,9999)};
+}
+
+function makeGrid(){return Array.from({length:GH},()=>Array(GW).fill(null));}
+
+// ──── PHYSICS ────
+// Support: >50% of the box's bottom cells must rest on floor or an occupied cell below.
+function isLegal(grid,box,gx,gy,rot){
+  const{w,h}=getDims(box,rot);
+  if(gx<0||gy<0||gx+w>GW||gy+h>GH)return false;
+  // overlap check
+  for(let dy=0;dy<h;dy++)
+    for(let dx=0;dx<w;dx++)
+      if(grid[gy+dy][gx+dx])return false;
+  // support check — >50% of bottom row supported
+  let sup=0;
+  for(let dx=0;dx<w;dx++){
+    const by=gy+h;
+    if(by===GH){sup++;continue;} // floor
+    if(grid[by][gx+dx])sup++;
+  }
+  return sup/w>0.5; // strictly more than half supported
+}
+
+function anyLegal(grid,box){
+  for(let y=0;y<GH;y++)for(let x=0;x<GW;x++)
+    if(isLegal(grid,box,x,y,false)||isLegal(grid,box,x,y,true))return true;
+  return false;
+}
+
+// ──── SUPPORT SCORE ────
+function supportScore(grid){
+  let tot=0,ok=0;
+  for(let y=0;y<GH;y++)for(let x=0;x<GW;x++){
+    if(!grid[y][x])continue;
+    tot++;
+    if(y+1>=GH||grid[y+1][x])ok++;
+  }
+  return tot?ok/tot:1;
+}
+
+// ──── WALL STABILITY CHECK ────
+// Returns # of heavy boxes (wc≥4) whose ENTIRE support is smalls
+function instabilityCount(grid){
+  const seen=new Set();let bad=0;
+  for(let y=0;y<GH;y++)for(let x=0;x<GW;x++){
+    const c=grid[y][x];
+    if(!c||seen.has(c.id)||c.box.wc<4)continue;
+    seen.add(c.id);
+    let supTotal=0,supSmalls=0;
+    for(let dx=0;dx<c.w;dx++){
+      const by=c.ry+c.h;
+      if(by>=GH)continue; // on floor, fine
+      const b=grid[by][c.rx+dx];
+      if(b){supTotal++;if(b.box.type==='small')supSmalls++;}
+    }
+    // All support cells (that exist) are smalls, AND box is heavy
+    if(supTotal>0&&supSmalls===supTotal)bad++;
+  }
+  return bad;
+}
+
+// ──── COG ────
+function calcCOG(grid){
+  let mass=0,wx=0;const seen=new Set();
+  for(let y=0;y<GH;y++)for(let x=0;x<GW;x++){
+    const c=grid[y][x];
+    if(c&&!seen.has(c.id)){seen.add(c.id);mass+=c.box.wc;wx+=c.box.wc*(c.rx+c.w/2);}
+  }
+  return mass?wx/mass/GW:.5;
+}
+
+// ──── VOIDS ────
+function getVoids(grid){
+  const v=[];
+  for(let y=0;y<GH;y++)for(let x=0;x<GW;x++){
+    if(!grid[y][x]){
+      let ab=false;for(let ay=0;ay<y;ay++)if(grid[ay][x]){ab=true;break;}
+      if(ab)v.push({x,y});
+    }
+  }
+  return v;
+}
+
+// ──── WALL HEIGHT ────
+function wallH(){
+  for(let y=0;y<GH;y++)for(let x=0;x<GW;x++)if(G.grid[y][x])return GH-y;
+  return 0;
+}
+
+function countFilled(){let n=0;for(const r of G.grid)for(const c of r)if(c)n++;return n;}
+
+// ──── PATTERN DETECTION ────
+function detectPatterns(){
+  const grid=G.grid;
+  let shelves=0,colPen=0,tShapes=0,iShapes=0;
+
+  // SHELVES: rows where ≥80% of GW cells are filled
+  for(let y=0;y<GH;y++){
+    let f=0;for(let x=0;x<GW;x++)if(grid[y][x])f++;
+    if(f===GW)shelves+=2;        // perfect row = double bonus
+    else if(f/GW>=0.8)shelves++; // near-full row
+  }
+
+  // COLUMNS penalty: any column (x) with ≥3 distinct box IDs stacked = penalty each
+  for(let x=0;x<GW;x++){
+    const ids=[];
+    for(let y=GH-1;y>=0;y--){
+      const c=grid[y][x];
+      if(c&&(!ids.length||ids[ids.length-1]!==c.id))ids.push(c.id);
+      else if(!c&&ids.length){
+        if(ids.length>=3)colPen++;
+        ids.length=0;
+      }
+    }
+    if(ids.length>=3)colPen++;
+  }
+
+  // T / I PATTERNS: examine each unique box
+  const done=new Set();
+  for(let y=0;y<GH;y++){
+    for(let x=0;x<GW;x++){
+      const c=grid[y][x];
+      if(!c||done.has(c.id))continue;
+      done.add(c.id);
+      // unique IDs supporting this box from below
+      const supIds=new Set();
+      for(let dx=0;dx<c.w;dx++){
+        const by=c.ry+c.h;
+        if(by<GH&&grid[by][c.rx+dx])supIds.add(grid[by][c.rx+dx].id);
+      }
+      // unique IDs on top of this box
+      const topIds=new Set();
+      for(let dx=0;dx<c.w;dx++){
+        const ty=c.ry-1;
+        if(ty>=0&&grid[ty]&&grid[ty][c.rx+dx])topIds.add(grid[ty][c.rx+dx].id);
+      }
+      // T-shape: ≥2 different support boxes AND ≥1 box on top
+      if(supIds.size>=2&&topIds.size>=1)tShapes++;
+      // I-shape: exactly 1 support, 1 top, narrow (w≤2), support and top are different IDs
+      const supId=[...supIds][0];const topId=[...topIds][0];
+      if(supIds.size===1&&topIds.size===1&&c.w<=2&&supId!==c.id&&topId!==c.id&&supId!==topId)iShapes++;
+    }
+  }
+  return{shelves,colPen,tShapes,iShapes};
+}
+
+// ──── CUBES SCORE ────
+function calcCUBES(){
+  const el=elapsed();
+  const pph=el>0?Math.round(placed/el*3600):0;
+  const filled=countFilled();
+  const eff=filled/(GW*GH);
+  const hp=wallH()/GH;
+  const ss=supportScore(G.grid);
+  const voids=getVoids(G.grid).length;
+  const cog=G.cog||.5;
+  const cogDev=Math.abs(cog-.5);
+  const pat=detectPatterns();
+
+  // Base
+  const base=Math.round(eff*600+hp*400);
+  // Speed multiplier 0.5–2.0×
+  const speedM=clamp(.5+(pph/200)*1.5,.5,2.0);
+  // Support multiplier 0.6–1.0×
+  const supM=clamp(.6+ss*.4,.6,1.0);
+  // Pattern bonuses
+  const shelfB=pat.shelves*80;
+  const tiB=(pat.tShapes+pat.iShapes)*120;
+  const colP=pat.colPen*40;
+  // Penalties
+  const voidP=voids*8;
+  const cogP=Math.round(cogDev*180);
+  // Smalls at bottom (bottom 3 rows) — light penalty
+  const smBot=countSmallsAtBottom();
+  const smP=smBot*4;
+  // Tetris bonuses accumulated
+  const tetB=(G.tetrisTotal||0)*TETRIS_BONUS;
+  // Stow bonus
+  const stowB=bagStowed?STOW_BONUS:0;
+
+  const raw=base+shelfB+tiB+tetB+stowB-colP-voidP-cogP-smP;
+  return Math.max(0,Math.round(raw*speedM*supM));
+}
+
+function countSmallsAtBottom(){
+  let n=0;const seen=new Set();
+  for(let y=GH-3;y<GH;y++)for(let x=0;x<GW;x++){
+    const c=G.grid[y][x];
+    if(c&&!seen.has(c.id)&&c.box.type==='small'){seen.add(c.id);n++;}
+  }
+  return n;
+}
+
+function elapsed(){return startT?(Date.now()-startT)/1000:0;}
+function getPPH(){const el=elapsed();return el>0?Math.round(placed/el*3600):0;}
+
+function checkFartWall(){
+  // Check at any point: if voids ≤ 2 AND wall height ≥ 60% AND not already triggered
+  if(G.fartTriggered)return;
+  const voids=getVoids(G.grid).length;
+  const hp=wallH()/GH;
+  if(voids<=2&&hp>=.6&&countFilled()>GW*4){
+    G.fartTriggered=true;
+    showBanner("YOU CAN'T FIT A FART<br>IN THAT WALL! 🎉",4000);
+    flash('fl-g');
+    G.tetrisTotal=(G.tetrisTotal||0)+2; // extra bonus
+  }
+}
+// A completely filled row = TETRIS — award bonus, flash banner
+function checkTetris(){
+  let found=false;
+  for(let y=0;y<GH;y++){
+    let full=true;for(let x=0;x<GW;x++)if(!G.grid[y][x]){full=false;break;}
+    if(full){found=true;}
+  }
+  if(!found)return;
+
+  G.tetrisTotal=(G.tetrisTotal||0)+1;
+  // Check for fart wall: total void airspace ≤2 cells AND wall height > 50%
+  const voids=getVoids(G.grid).length;
+  const hp=wallH()/GH;
+  if(voids<=2&&hp>=.5){
+    showBanner("YOU CAN'T FIT A FART<br>IN THAT WALL! 🎉",3800);
+  }else{
+    showBanner('TETRIS!<br>+'+TETRIS_BONUS+' CUBES',2000);
+  }
+  flash('fl-g');
+}
+
+// ──── PLACE BOX ────
+function placeBox(fromBag,qIdx,gx,gy,rot){
+  const box=fromBag?G.bag:G.queue[qIdx];
+  if(!box)return false;
+  if(!isLegal(G.grid,box,gx,gy,rot))return false;
+  const{w,h}=getDims(box,rot);
+  const cell={box,id:box.id,rx:gx,ry:gy,w,h};
+  for(let dy=0;dy<h;dy++)for(let dx=0;dx<w;dx++)G.grid[gy+dy][gx+dx]=cell;
+  if(fromBag){G.bag=null;bagActive=false;}
+  else{G.queue.splice(qIdx,1);refill();}
+  if(liftedBox){liftedBox=null;document.getElementById('lift-ind').classList.remove('vis');}
+  placed++;
+  G.cog=calcCOG(G.grid);
+  G.support=supportScore(G.grid);
+  G.score=calcCUBES();
+  checkTetris();
+  checkFartWall();
+  checkStability();
+  checkWin();
+  return true;
+}
+
+function refill(){
+  while(G.queue.length<10)G.queue.push(genPiece(diff));
+}
+
+// ──── LIFT PLACED BOX ────
+function liftBox(cell){
+  // Remove from grid
+  for(let dy=0;dy<cell.h;dy++)for(let dx=0;dx<cell.w;dx++)G.grid[cell.ry+dy][cell.rx+dx]=null;
+  liftedBox=cell.box;
+  // Insert back to queue front (trim to 10)
+  G.queue.unshift(cell.box);
+  if(G.queue.length>10)G.queue.pop();
+  placed=Math.max(0,placed-1);
+  selIdx=0;selRot=false;
+  document.getElementById('lift-ind').classList.add('vis');
+  document.getElementById('lift-btn').classList.add('vis');
+  G.cog=calcCOG(G.grid);G.support=supportScore(G.grid);G.score=calcCUBES();
+  renderAll();
+}
+
+function cancelLift(){
+  if(!liftedBox)return;
+  liftedBox=null;
+  document.getElementById('lift-ind').classList.remove('vis');
+  document.getElementById('lift-btn').classList.remove('vis');
+  // Keep the piece in the queue — player keeps it as a queue item
+  renderAll();
+}
+
+// ──── SMALLS BAG ────
+function bagClick(){
+  if(!G.bag||bagStowed)return;
+  bagActive=!bagActive;
+  if(bagActive){selIdx=null;selRot=false;}
+  renderAll();
+}
+
+function bagStow(e){
+  e.stopPropagation();
+  if(!G.bag||bagStowed)return;
+  bagStowed=true;G.bag=null;bagActive=false;
+  G.score=calcCUBES();
+  const cx=parseInt(document.getElementById('bag').getBoundingClientRect().left)+25;
+  showPop(cx,100,'+'+STOW_BONUS+' STOW!','bonus');
+  flash('fl-g');
+  renderAll();
+}
+
+// ──── FAIL CHECKS ────
+function checkPPH(dt){
+  const el=elapsed();
+  if(el<LOW_PPH_GRACE)return;
+  const pph=getPPH();
+  if(pph<MIN_PPH){
+    pphLowSec+=dt;
+    document.getElementById('pph-warn').classList.add('vis');
+    if(pphLowSec>=LOW_PPH_FAIL)endGame('PPH BELOW '+MIN_PPH+' FOR 2 MINUTES — LOAD FASTER!',false);
+  }else{
+    pphLowSec=0;
+    document.getElementById('pph-warn').classList.remove('vis');
+  }
+}
+
+function checkLargeZone(dt){
+  const seen=new Set();let danger=false;
+  for(let y=0;y<GH/2;y++)for(let x=0;x<GW;x++){
+    const c=G.grid[y][x];
+    if(c&&!seen.has(c.id)&&c.box.type==='large'){seen.add(c.id);danger=true;}
+  }
+  const lz=document.getElementById('lgz');
+  const lb=document.getElementById('lg-bar');
+  if(danger){
+    lgDangerSec+=dt;
+    lz.classList.add('pulse');
+    lb.style.width=clamp(lgDangerSec/LARGE_DANGER_FAIL,0,1)*100+'%';
+    if(lgDangerSec>=LARGE_DANGER_FAIL)endGame('HEAVY BOX FELL BEHIND — LOAD HEAVIES AT THE BOTTOM!',false);
+  }else{
+    lgDangerSec=Math.max(0,lgDangerSec-dt*.4);
+    lb.style.width=clamp(lgDangerSec/LARGE_DANGER_FAIL,0,1)*100+'%';
+    if(lgDangerSec<=0)lz.classList.remove('pulse');
+  }
+}
+
+function checkStability(){
+  const bad=instabilityCount(G.grid);
+  if(bad>=3)endGame('WALL COLLAPSE — TOO MANY SMALLS SUPPORTING HEAVY LOADS!',false);
+}
+
+function checkWin(){
+  const hp=wallH()/GH;
+  if(hp>=1)endGame('PERFECT LOAD — 100% WALL HEIGHT!',true);
+  else if(hp>=WIN_H)endGame('WALL COMPLETE — MISSION ACCOMPLISHED!',true);
+}
+
+function checkNoMoves(){
+  const all=[...G.queue];
+  if(G.bag)all.push(G.bag);
+  if(all.some(b=>anyLegal(G.grid,b)))return;
+  endGame('NO VALID PLACEMENTS — THE WALL IS SEALED.',false);
+}
+
+// ──── ROTATE ────
+function rotateSel(){
+  if(selIdx!==null){const b=G.queue[selIdx];if(b&&b.type!=='large')selRot=!selRot;}
+  else if(bagActive&&G.bag&&G.bag.type!=='large')selRot=!selRot;
+  renderAll();
+}
+
+// ──── RENDER: TRAILER ────
+function renderTrailer(){
+  tCtx.clearRect(0,0,CW,CH);
+
+  // BG dot grid
+  tCtx.strokeStyle='rgba(180,130,60,.065)';tCtx.lineWidth=.4;
+  for(let x=tL;x<=tL+tW;x+=cW){tCtx.beginPath();tCtx.moveTo(x,0);tCtx.lineTo(x,CH);tCtx.stroke();}
+  for(let y=tT;y<=tT+tH;y+=cH){tCtx.beginPath();tCtx.moveTo(0,y);tCtx.lineTo(CW,y);tCtx.stroke();}
+
+  // Trailer bg
+  const g=tCtx.createLinearGradient(tL,tT,tL,tT+tH);
+  g.addColorStop(0,'rgba(18,14,8,.97)');g.addColorStop(1,'rgba(7,5,2,.99)');
+  tCtx.fillStyle=g;tCtx.beginPath();tCtx.roundRect(tL-1,tT-1,tW+2,tH+2,3);tCtx.fill();
+
+  // Inner grid
+  tCtx.strokeStyle='rgba(200,155,70,.075)';tCtx.lineWidth=.5;
+  for(let x=0;x<=GW;x++){tCtx.beginPath();tCtx.moveTo(tL+x*cW,tT);tCtx.lineTo(tL+x*cW,tT+tH);tCtx.stroke();}
+  for(let y=0;y<=GH;y++){tCtx.beginPath();tCtx.moveTo(tL,tT+y*cH);tCtx.lineTo(tL+tW,tT+y*cH);tCtx.stroke();}
+
+  // Trailer border
+  tCtx.strokeStyle='rgba(245,196,0,.27)';tCtx.lineWidth=1.5;
+  tCtx.beginPath();tCtx.roundRect(tL-1,tT-1,tW+2,tH+2,3);tCtx.stroke();
+
+  // Floor
+  tCtx.strokeStyle='rgba(180,130,60,.28)';tCtx.lineWidth=2;
+  tCtx.beginPath();tCtx.moveTo(tL,tT+tH-1);tCtx.lineTo(tL+tW,tT+tH-1);tCtx.stroke();
+
+  // Lower-half tint (where heavies should be)
+  tCtx.fillStyle='rgba(248,113,113,.02)';
+  tCtx.fillRect(tL,tT+tH/2,tW,tH/2);
+
+  // 95% guideline
+  const g95=tT+tH*(1-WIN_H);
+  tCtx.save();tCtx.strokeStyle='rgba(0,229,160,.36)';tCtx.lineWidth=1;tCtx.setLineDash([5,4]);
+  tCtx.beginPath();tCtx.moveTo(tL,g95);tCtx.lineTo(tL+tW,g95);tCtx.stroke();tCtx.setLineDash([]);
+  tCtx.fillStyle='rgba(0,229,160,.48)';tCtx.font=`${Math.max(6,cH*.32)}px Share Tech Mono`;
+  tCtx.fillText('95%',tL+3,g95-2);tCtx.restore();
+
+  // Void highlight when bag active
+  if(bagActive&&G.bag){
+    const voids=getVoids(G.grid);
+    const a=.09+.05*Math.sin(Date.now()/300);
+    tCtx.fillStyle=`rgba(192,132,252,${a})`;
+    for(const{x,y}of voids)tCtx.fillRect(tL+x*cW+1,tT+y*cH+1,cW-2,cH-2);
+  }
+
+  // Shelf row highlight
+  for(let y=0;y<GH;y++){
+    let f=0;for(let x=0;x<GW;x++)if(G.grid[y][x])f++;
+    if(f/GW>=.8){
+      tCtx.fillStyle=f===GW?'rgba(0,229,160,.05)':'rgba(245,196,0,.03)';
+      tCtx.fillRect(tL,tT+y*cH,tW,cH);
+    }
+  }
+
+  // Draw placed boxes
+  const drawn=new Set();
+  for(let y=0;y<GH;y++)for(let x=0;x<GW;x++){
+    const c=G.grid[y][x];
+    if(c&&c.rx===x&&c.ry===y&&!drawn.has(c.id)){drawn.add(c.id);renderBox(c);}
+  }
+}
+
+// ──── CARDBOARD BOX RENDERER ────
+function renderBox(cell){
+  const px=tL+cell.rx*cW,py=tT+cell.ry*cH;
+  const pw=cell.w*cW,ph=cell.h*cH;
+  const p=cell.box.pal||CB[0];
+  const depth=1-(cell.ry/GH)*.022;
+  const sr=sRand(cell.box.seed||1);
+
+  tCtx.save();
+  tCtx.translate(px+pw/2,py+ph/2);tCtx.scale(depth,depth);tCtx.translate(-pw/2,-ph/2);
+
+  // Cardboard body
+  const bg=tCtx.createLinearGradient(0,0,pw*.6,ph);
+  bg.addColorStop(0,p.l);bg.addColorStop(.55,p.b);bg.addColorStop(1,p.d);
+  tCtx.fillStyle=bg;tCtx.fillRect(1,1,pw-2,ph-2);
+
+  // Corrugation lines
+  tCtx.strokeStyle='rgba(0,0,0,.065)';tCtx.lineWidth=.5;
+  const ls=Math.max(3,cH*.38);
+  for(let ly=ls;ly<ph-1;ly+=ls){tCtx.beginPath();tCtx.moveTo(2,ly);tCtx.lineTo(pw-2,ly);tCtx.stroke();}
+
+  // Edges
+  tCtx.strokeStyle='rgba(0,0,0,.3)';tCtx.lineWidth=.5;tCtx.strokeRect(1,1,pw-2,ph-2);
+  tCtx.strokeStyle='rgba(255,255,255,.1)';tCtx.lineWidth=.5;tCtx.strokeRect(2,2,pw-4,ph-4);
+
+  // Tape strips
+  const nTape=pw>cW*2?2:1;
+  for(let ti=0;ti<nTape;ti++){
+    const tx=2+(ti>0?sr()*pw*.2:0);
+    const tw=Math.min(pw*.5+sr()*pw*.25,pw-4);
+    const ty=2+sr()*Math.min(cH*.3,ph*.18);
+    const th=Math.max(2.5,cH*.14);
+    tCtx.fillStyle=p.t;tCtx.fillRect(tx,ty,tw,th);
+    tCtx.fillStyle='rgba(255,255,255,.14)';tCtx.fillRect(tx,ty,tw,th*.4);
+  }
+
+  // Center seam
+  if(pw>cW*1.6){
+    tCtx.strokeStyle='rgba(0,0,0,.12)';tCtx.lineWidth=.6;tCtx.setLineDash([3,2]);
+    const sx=pw*.5+(sr()-.5)*cW*.25;
+    tCtx.beginPath();tCtx.moveTo(sx,2);tCtx.lineTo(sx,ph-2);tCtx.stroke();tCtx.setLineDash([]);
+  }
+
+  // Label
+  const lw=Math.max(cW*.65,Math.min(pw*.48,cW*2.2));
+  const lh=Math.max(cH*.28,Math.min(ph*.36,cH*1.4));
+  const lx=pw*.5-lw*.5+(sr()-.5)*cW*.18;
+  const ly=ph*.5-lh*.5+(sr()-.5)*cH*.18;
+  if(pw>cW*.55&&ph>cH*.45){
+    tCtx.fillStyle='rgba(255,252,235,.87)';
+    tCtx.beginPath();tCtx.roundRect(lx,ly,lw,lh,1.5);tCtx.fill();
+    tCtx.strokeStyle='rgba(0,0,0,.14)';tCtx.lineWidth=.4;tCtx.stroke();
+    const fs=Math.max(4,Math.min(lh*.36,cH*.22,8));
+    tCtx.fillStyle=cell.box.type==='large'?'rgba(130,20,10,.8)':'rgba(30,18,6,.7)';
+    tCtx.font=`bold ${fs}px Share Tech Mono`;
+    tCtx.textAlign='center';tCtx.textBaseline='middle';
+    const lbl=cell.box.n||(cell.box.type==='large'?'HEAVY':cell.box.label||'BOX');
+    tCtx.fillText(lbl,lx+lw*.5,ly+lh*.5);
+    // Barcode
+    if(lh>cH*.6){
+      const bx=lx+2,bby=ly+lh*.68,bw=lw-4,bh=lh*.18;
+      for(let bi=0;bi<Math.floor(bw/2);bi++)
+        if(sr()>.4){tCtx.fillStyle='rgba(0,0,0,.55)';tCtx.fillRect(bx+bi*2,bby,1,bh);}
+    }
+  }
+
+  // Large: hazard stripes
+  if(cell.box.type==='large'){
+    tCtx.save();tCtx.globalAlpha=.15;
+    tCtx.fillStyle='#f87171';
+    const stripe=Math.max(6,cW*.8);
+    for(let si=0;si<pw+ph;si+=stripe*2){
+      tCtx.save();tCtx.beginPath();tCtx.rect(0,0,pw,ph);tCtx.clip();
+      tCtx.beginPath();tCtx.moveTo(si,0);tCtx.lineTo(si+stripe,0);
+      tCtx.lineTo(si+stripe-ph,ph);tCtx.lineTo(si-ph,ph);tCtx.closePath();tCtx.fill();
+      tCtx.restore();
+    }
+    tCtx.restore();
+  }
+  // Smalls: purple edge
+  if(cell.box.type==='small'){
+    tCtx.strokeStyle='rgba(192,132,252,.33)';tCtx.lineWidth=1;tCtx.strokeRect(1,1,pw-2,ph-2);
+  }
+
+  tCtx.restore();
+}
+
+// ──── PLACEMENT PREVIEW ────
+function renderPlacement(){
+  pCtx.clearRect(0,0,CW,CH);
+  if(!hCell)return;
+  const fromBag=bagActive&&G.bag;
+  const hasSelection=fromBag||(selIdx!==null);
+
+  // Lift hint: hovering a placed box with no selection → show "lift" glow
+  if(!hasSelection){
+    const{x:gx,y:gy}=hCell;
+    const existing=G.grid[gy][gx];
+    if(existing){
+      pCtx.save();
+      pCtx.strokeStyle='rgba(96,165,250,.7)';pCtx.lineWidth=2;
+      pCtx.fillStyle='rgba(96,165,250,.08)';
+      pCtx.fillRect(tL+existing.rx*cW,tT+existing.ry*cH,existing.w*cW-1,existing.h*cH-1);
+      pCtx.strokeRect(tL+existing.rx*cW+1,tT+existing.ry*cH+1,existing.w*cW-2,existing.h*cH-2);
+      pCtx.fillStyle='rgba(96,165,250,.7)';
+      pCtx.font=`bold ${Math.max(6,cH*.28)}px Share Tech Mono`;
+      pCtx.textAlign='center';pCtx.textBaseline='middle';
+      pCtx.fillText('LIFT',tL+(existing.rx+existing.w/2)*cW,tT+(existing.ry+existing.h/2)*cH);
+      pCtx.restore();
+    }
+    return;
+  }
+
+  const box=fromBag?G.bag:G.queue[selIdx];
+  if(!box)return;
+  const{x:gx,y:gy}=hCell;
+  const ok=isLegal(G.grid,box,gx,gy,selRot);
+  const{w,h}=getDims(box,selRot);
+  pCtx.save();
+  if(ok){
+    if(fromBag){pCtx.fillStyle='rgba(192,132,252,.16)';pCtx.strokeStyle='rgba(192,132,252,.85)';}
+    else if(box.type==='large'){pCtx.fillStyle='rgba(248,113,113,.12)';pCtx.strokeStyle='rgba(248,113,113,.85)';}
+    else{pCtx.fillStyle='rgba(200,170,90,.11)';pCtx.strokeStyle='rgba(245,196,0,.85)';}
+  }else{pCtx.fillStyle='rgba(255,60,30,.12)';pCtx.strokeStyle='rgba(255,60,30,.8)';}
+  pCtx.lineWidth=1.5;
+  for(let dy=0;dy<h;dy++)for(let dx=0;dx<w;dx++)
+    pCtx.fillRect(tL+(gx+dx)*cW+1,tT+(gy+dy)*cH+1,cW-2,cH-2);
+  pCtx.strokeRect(tL+gx*cW+.5,tT+gy*cH+.5,w*cW-1,h*cH-1);
+  pCtx.fillStyle=ok?'rgba(255,255,255,.8)':'rgba(255,130,90,.9)';
+  pCtx.font=`bold ${Math.max(7,cH*.3)}px Share Tech Mono`;
+  pCtx.textAlign='center';pCtx.textBaseline='middle';
+  pCtx.fillText(`${w}×${h}`,tL+(gx+w/2)*cW,tT+(gy+h/2)*cH);
+  pCtx.restore();
+}
+
+// ──── MINI BOX (queue thumbnails) ────
+function drawMiniBox(canvas,box){
+  const ctx=canvas.getContext('2d');
+  const w=canvas.width,h=canvas.height;
+  ctx.clearRect(0,0,w,h);
+  const p=box.pal||CB[0];
+  const sr=sRand(box.seed||1);
+  const bg=ctx.createLinearGradient(0,0,w,h);
+  bg.addColorStop(0,p.l);bg.addColorStop(1,p.d);
+  ctx.fillStyle=bg;ctx.fillRect(1,1,w-2,h-2);
+  // corrugation
+  ctx.strokeStyle='rgba(0,0,0,.07)';ctx.lineWidth=.5;
+  for(let y=3;y<h;y+=4){ctx.beginPath();ctx.moveTo(1,y);ctx.lineTo(w-1,y);ctx.stroke();}
+  // tape
+  ctx.fillStyle=p.t;ctx.fillRect(1,2,w-2,Math.max(2,h*.18));
+  ctx.fillStyle='rgba(255,255,255,.12)';ctx.fillRect(1,2,w-2,Math.max(1,h*.08));
+  // border
+  ctx.strokeStyle='rgba(0,0,0,.3)';ctx.lineWidth=.5;ctx.strokeRect(.5,.5,w-1,h-1);
+  if(box.type==='large'){ctx.strokeStyle='rgba(248,113,113,.55)';ctx.lineWidth=1;ctx.strokeRect(.5,.5,w-1,h-1);}
+  if(box.type==='small'){ctx.strokeStyle='rgba(192,132,252,.42)';ctx.lineWidth=.8;ctx.strokeRect(.5,.5,w-1,h-1);}
+  // label
+  if(w>14&&h>9){
+    ctx.fillStyle='rgba(25,14,4,.65)';
+    ctx.font=`bold ${Math.max(5,Math.min(h*.3,7))}px Share Tech Mono`;
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(box.n||(box.type==='large'?'HVY':box.type==='small'?'SML':'BOX'),w/2,h*.62);
+  }
+}
+
+// ──── QUEUE DOM ────
+function renderQueue(){
+  const grid=document.getElementById('qg');
+  grid.innerHTML='';
+  const slots=G.queue.slice(0,10);
+  slots.forEach((box,i)=>{
+    const rot=selIdx===i&&selRot;
+    const{w,h}=getDims(box,rot);
+    const el=document.createElement('div');
+    el.className='qs'+(selIdx===i?' sel':'')+(box===liftedBox?' lifted':'')
+      +(box.type==='small'?' is-sm':'')+(box.type==='large'?' is-lg':'');
+
+    // Mini canvas
+    const c=document.createElement('canvas');
+    const sz=Math.min(36,Math.max(14,Math.round(32*(w/(w+h))+10)));
+    const sh=Math.min(28,Math.max(8,Math.round(sz*(h/w))));
+    c.width=sz;c.height=sh;
+    c.style.cssText=`width:${sz}px;height:${sh}px;border-radius:2px;display:block;`;
+    drawMiniBox(c,box);
+
+    const d=document.createElement('div');
+    d.className='qd';d.textContent=`${w}×${h}·W${box.wc||1}`;
+
+    el.appendChild(c);el.appendChild(d);
+    el.onclick=()=>{
+      bagActive=false;
+      if(selIdx===i){selIdx=null;selRot=false;}else{selIdx=i;selRot=false;}
+      renderAll();
+    };
+    grid.appendChild(el);
+  });
+}
+
+// ──── BAG DOM ────
+function renderBag(){
+  const el=document.getElementById('bag');
+  const ico=document.getElementById('bag-ico');
+  const lbl=document.getElementById('bag-lbl');
+  const stow=document.getElementById('stow-btn');
+  if(bagStowed){
+    el.className='';el.classList.add('stowed');
+    ico.textContent='✅';lbl.textContent='STOWED\n+200';stow.style.display='none';
+  }else if(G.bag){
+    el.className=bagActive?'has sel':'has';
+    ico.textContent='🎒';
+    lbl.textContent=G.bag.n||`${G.bag.w}×${G.bag.h}`;
+    stow.style.display='block';
+  }else{
+    el.className='';
+    ico.textContent='🎒';lbl.textContent='EMPTY';stow.style.display='none';
+  }
+}
+
+// ──── LARGE ZONE DOM ────
+function renderLargeZone(){
+  const lp=document.getElementById('lg-previews');
+  lp.innerHTML='';
+  const larges=G.queue.filter(b=>b.type==='large').slice(0,3);
+  larges.forEach(box=>{
+    const c=document.createElement('canvas');
+    const qi=G.queue.indexOf(box);
+    c.className='lg-prev'+(selIdx===qi?' sel':'');
+    c.width=42;c.height=22;c.style.cssText='width:42px;height:22px;border-radius:2px;cursor:pointer;';
+    drawMiniBox(c,box);
+    c.onclick=()=>{bagActive=false;selIdx=qi;selRot=false;renderAll();};
+    lp.appendChild(c);
+  });
+  // Show count if no larges in queue
+  if(larges.length===0){
+    const txt=document.createElement('div');
+    txt.style.cssText='font-family:Share Tech Mono,monospace;font-size:7px;color:rgba(248,113,113,.5);text-align:center;';
+    txt.textContent='NONE';
+    lp.appendChild(txt);
+  }
+}
+
+// ──── HUD ────
+function renderHUD(){
+  const hp=wallH()/GH;
+  document.getElementById('h-fill').style.width=(hp*100)+'%';
+  document.getElementById('h-pct').textContent=Math.round(hp*100)+'%';
+  document.getElementById('cv-score').textContent=G.score||0;
+  const pph=getPPH();
+  document.getElementById('cv-pph').textContent=pph||'—';
+  const pc2=document.getElementById('chip-pph');
+  pc2.className='chip'+(pph>0&&pph<MIN_PPH&&elapsed()>LOW_PPH_GRACE?' danger':pph>120?' ok':'');
+  document.getElementById('cv-eff').textContent=Math.round(countFilled()/(GW*GH)*100)+'%';
+  const ss=G.support||1;
+  document.getElementById('s-fill').style.width=(ss*100)+'%';
+  document.getElementById('s-pct').textContent=Math.round(ss*100)+'%';
+  document.getElementById('cv-sup').textContent=Math.round(ss*100)+'%';
+  // COG
+  const cog=G.cog||.5,dev=Math.abs(cog-.5);
+  document.getElementById('cog-d').style.left=(cog*100)+'%';
+  const cs=document.getElementById('cog-s');
+  if(dev<.1){cs.textContent='STABLE';cs.style.color='var(--ok)';}
+  else if(dev<.22){cs.textContent='CAUTION';cs.style.color='var(--warn)';}
+  else if(dev<.35){cs.textContent='WARN';cs.style.color='var(--a2)';}
+  else{cs.textContent='DANGER';cs.style.color='var(--danger)';}
+}
+
+function renderAll(){renderQueue();renderBag();renderLargeZone();renderPlacement();}
+
+function loop(ts){
+  const dt=lastLoopT?Math.min((ts-lastLoopT)/1000,0.1):0.016;
+  lastLoopT=ts;
+  renderTrailer();renderHUD();
+  if(!gOver){checkPPH(dt);checkLargeZone(dt);}
+  animF=requestAnimationFrame(loop);
+}
+
+// ──── POINTER EVENTS ────
+function getPC(e){
+  const r=tc.getBoundingClientRect();
+  const cx=e.clientX??e.touches?.[0]?.clientX??e.changedTouches?.[0]?.clientX;
+  const cy=e.clientY??e.touches?.[0]?.clientY??e.changedTouches?.[0]?.clientY;
+  if(cx===undefined)return null;
+  return{mx:(cx-r.left)*(CW/r.width),my:(cy-r.top)*(CH/r.height)};
+}
+tc.addEventListener('pointermove',e=>{
+  if(e.pointerType==='touch')e.preventDefault();
+  const c=getPC(e);if(c)doHover(c.mx,c.my);
+},{passive:false});
+tc.addEventListener('pointerdown',e=>e.preventDefault(),{passive:false});
+tc.addEventListener('pointerup',e=>{
+  e.preventDefault();const c=getPC(e);if(c)doClick(c.mx,c.my);
+},{passive:false});
+tc.addEventListener('contextmenu',e=>e.preventDefault());
+
+function doHover(mx,my){
+  const gx=Math.floor((mx-tL)/cW),gy=Math.floor((my-tT)/cH);
+  hCell=(gx>=0&&gx<GW&&gy>=0&&gy<GH)?{x:gx,y:gy}:null;
+  renderPlacement();
+}
+
+function doClick(mx,my){
+  const gx=Math.floor((mx-tL)/cW),gy=Math.floor((my-tT)/cH);
+  if(gx<0||gx>=GW||gy<0||gy>=GH)return;
+
+  const fromBag=bagActive&&G.bag;
+  const hasSelection=fromBag||(selIdx!==null);
+
+  // If nothing selected and clicking a placed box → lift it
+  if(!hasSelection){
+    const existing=G.grid[gy][gx];
+    if(existing){liftBox(existing);return;}
+    return; // click empty space with no selection = no-op
+  }
+
+  // Place selected piece
+  const box=fromBag?G.bag:G.queue[selIdx];
+  if(!box)return;
+  if(!isLegal(G.grid,box,gx,gy,selRot))return;
+
+  const prev=G.score||0;
+  if(placeBox(fromBag,selIdx,gx,gy,selRot)){
+    const delta=(G.score||0)-prev;
+    showPop(mx,my,(delta>=0?'+':'')+delta,fromBag?'sm':'main');
+    if(!fromBag)selIdx=null;
+    selRot=false;
+    document.getElementById('lift-btn').classList.remove('vis');
+    renderAll();
+    checkNoMoves();
+  }
+}
+
+// ──── HELPERS ────
+function showPop(x,y,t,type){
+  const e=document.createElement('div');
+  const col=type==='sm'?'#c084fc':type==='bonus'?'#00e5a0':'#f5c400';
+  e.className='sp';
+  e.style.cssText=`left:${x}px;top:${y}px;font-size:${type==='bonus'?22:16}px;color:${col};text-shadow:0 0 10px currentColor;`;
+  e.textContent=t;
+  document.body.appendChild(e);setTimeout(()=>e.remove(),1000);
+}
+function flash(id){const e=document.getElementById(id);e.classList.add('on');setTimeout(()=>e.classList.remove('on'),320);}
+function showBanner(html,dur=2200){
+  const b=document.getElementById('banner');
+  b.innerHTML=html;b.classList.add('vis');
+  setTimeout(()=>b.classList.remove('vis'),dur);
+}
+
+// ──── LIFECYCLE ────
+function setDiff(d,btn){
+  diff=d;
+  document.querySelectorAll('.db').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+}
+
+function startGame(){
+  document.getElementById('ov-start').classList.add('hidden');
+  G={grid:makeGrid(),queue:[],bag:genBagPiece(),score:0,cog:.5,support:1,tetrisTotal:0,fartTriggered:false};
+  refill();
+  placed=0;startT=Date.now();selIdx=null;selRot=false;hCell=null;
+  liftedBox=null;bagActive=false;bagStowed=false;lgDangerSec=0;pphLowSec=0;gOver=false;
+  document.getElementById('pph-warn').classList.remove('vis');
+  document.getElementById('lift-ind').classList.remove('vis');
+  document.getElementById('lift-btn').classList.remove('vis');
+  resz();renderAll();
+  if(animF)cancelAnimationFrame(animF);lastLoopT=0;loop(performance.now());
+}
+
+function genBagPiece(){
+  const tmpl={...pick(P_SMALL)};
+  return{...tmpl,id:'BAG'+Date.now(),pal:CB_SMALL,label:'SMALLS',seed:rnd(100,9999)};
+}
+
+function restartGame(){
+  document.getElementById('ov-end').classList.add('hidden');
+  startGame();
+}
+
+function endGame(reason,win){
+  if(gOver)return;gOver=true;
+  if(animF)cancelAnimationFrame(animF);
+  const hp=wallH()/GH;
+  const eff=countFilled()/(GW*GH);
+  const el=elapsed();
+  const pph=el>0?Math.round(placed/el*3600):0;
+  const ss=G.support||1;
+  renderHeatmap();
+  hmc.classList.add('vis');setTimeout(()=>hmc.classList.remove('vis'),2800);
+  document.getElementById('end-title').innerHTML=win?(hp>=1?'PERFECT<br>LOAD':'WALL<br>DONE'):'GAME<br>OVER';
+  document.getElementById('end-sub').textContent=reason;
+  document.getElementById('es-score').textContent=G.score||0;
+  document.getElementById('es-pph').textContent=pph;
+  document.getElementById('es-eff').textContent=Math.round(eff*100)+'%';
+  document.getElementById('es-sup').textContent=Math.round(ss*100)+'%';
+  document.getElementById('tip').textContent=buildTip(eff,G.cog,ss,getPPH(),placed);
+  document.getElementById('ov-end').classList.remove('hidden');
+}
+
+function buildTip(eff,cog,ss,pph,pl){
+  const t=[];
+  if(pph<MIN_PPH&&pl>3)t.push('PPH too low — select a piece fast and place it. Speed is half the score!');
+  if(ss<.65)t.push('Support was shaky. Build bottom-up; avoid floating pieces for a multiplier boost.');
+  if(Math.abs((cog||.5)-.5)>.22)t.push('COG was off-center. Alternate heavy pieces left and right.');
+  if(eff<.55)t.push('Pack efficiency below 55%. Use smalls to fill gaps — every void costs you 8 CUBES.');
+  if(!bagStowed&&pl>4)t.push('SMALLS BAG tip: stow it at the top for a free +200 CUBES bonus!');
+  if(!t.length)t.push('Elite load! Chase T/I patterns and perfect shelves for maximum CUBES score.');
+  return '💡 '+t[0];
+}
+
+function renderHeatmap(){
+  hmCtx.clearRect(0,0,CW,CH);
+  for(let y=0;y<GH;y++)for(let x=0;x<GW;x++){
+    const c=G.grid[y][x];
+    const px=tL+x*cW,py=tT+y*cH;
+    if(c){
+      const e=c.box.wc/5;
+      hmCtx.fillStyle=c.box.type==='small'?`rgba(192,132,252,${e*.8})`:`rgba(0,229,160,${e*.75})`;
+    }else{
+      let ab=false;for(let ay=0;ay<y;ay++)if(G.grid[ay][x]){ab=true;break;}
+      hmCtx.fillStyle=ab?'rgba(255,60,30,.58)':'transparent';
+    }
+    hmCtx.fillRect(px,py,cW-1,cH-1);
+  }
+}
+
+window.addEventListener('resize',()=>{resz();});
+resz();
+</script>
+</body>
+</html>
